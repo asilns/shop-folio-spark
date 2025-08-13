@@ -220,6 +220,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      reset_order_sequence: {
+        Args: { new_start: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
