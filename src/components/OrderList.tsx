@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, DollarSign, FileText, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -54,6 +55,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
   const { toast } = useToast();
 
   const fetchOrders = async () => {
@@ -183,6 +186,96 @@ export function OrderList({ onDataChange }: OrderListProps) {
     }
   };
 
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    const newSelected = new Set(selectedOrders);
+    if (checked) {
+      newSelected.add(orderId);
+    } else {
+      newSelected.delete(orderId);
+    }
+    setSelectedOrders(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allOrderIds = new Set(orders.map(order => order.id));
+      setSelectedOrders(allOrderIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedOrders(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const bulkUpdateStatus = async (newStatus: string) => {
+    try {
+      const orderIds = Array.from(selectedOrders);
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .in('id', orderIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Updated ${orderIds.length} orders to ${newStatus}`,
+      });
+
+      fetchOrders();
+      onDataChange?.();
+      setSelectedOrders(new Set());
+      setShowBulkActions(false);
+    } catch (error: any) {
+      console.error('Error updating orders:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update orders",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const bulkDeleteOrders = async () => {
+    try {
+      const orderIds = Array.from(selectedOrders);
+      
+      // First delete order items for all selected orders
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .in('order_id', orderIds);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the orders
+      const { error: ordersError } = await supabase
+        .from('orders')
+        .delete()
+        .in('id', orderIds);
+
+      if (ordersError) throw ordersError;
+
+      toast({
+        title: "Success",
+        description: `Deleted ${orderIds.length} orders successfully`,
+      });
+
+      fetchOrders();
+      onDataChange?.();
+      setSelectedOrders(new Set());
+      setShowBulkActions(false);
+    } catch (error: any) {
+      console.error('Error deleting orders:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete orders",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -199,9 +292,65 @@ export function OrderList({ onDataChange }: OrderListProps) {
           <CardDescription>View and manage customer orders</CardDescription>
         </CardHeader>
         <CardContent>
+          {showBulkActions && (
+            <div className="mb-4 p-3 bg-muted rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {selectedOrders.size} orders selected
+                </span>
+                <div className="flex gap-2">
+                  <Select onValueChange={bulkUpdateStatus}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Update Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Mark as Pending</SelectItem>
+                      <SelectItem value="confirmed">Mark as Confirmed</SelectItem>
+                      <SelectItem value="processing">Mark as Processing</SelectItem>
+                      <SelectItem value="shipped">Mark as Shipped</SelectItem>
+                      <SelectItem value="delivered">Mark as Delivered</SelectItem>
+                      <SelectItem value="cancelled">Mark as Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        Delete Selected
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Selected Orders</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {selectedOrders.size} selected orders? 
+                          This action cannot be undone and will remove all order items as well.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={bulkDeleteOrders}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete Orders
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={selectedOrders.size === orders.length && orders.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all orders"
+                  />
+                </TableHead>
                 <TableHead>Order #</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Total</TableHead>
@@ -213,6 +362,13 @@ export function OrderList({ onDataChange }: OrderListProps) {
             <TableBody>
               {orders.map((order) => (
                 <TableRow key={order.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedOrders.has(order.id)}
+                      onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                      aria-label={`Select order ${order.order_number}`}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     {order.order_number}
                   </TableCell>
@@ -310,7 +466,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
               ))}
               {orders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     No orders found. Create your first order to get started.
                   </TableCell>
                 </TableRow>
