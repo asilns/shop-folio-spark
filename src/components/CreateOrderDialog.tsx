@@ -33,6 +33,7 @@ interface OrderItem {
 
 interface NewCustomer {
   full_name: string;
+  email: string;
   phone: string;
   address: string;
   city: string;
@@ -54,6 +55,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [newCustomer, setNewCustomer] = useState<NewCustomer>({
     full_name: '',
+    email: '',
     phone: '',
     address: '',
     city: ''
@@ -132,7 +134,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
     if (showNewCustomerForm && (!newCustomer.full_name || !newCustomer.phone || !newCustomer.address || !newCustomer.city)) {
       toast({
         title: "Error",
-        description: "Please fill in all customer fields",
+        description: "Please fill in all required customer fields (name, phone, address, city)",
         variant: "destructive",
       });
       return;
@@ -161,17 +163,20 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
-        // Create unique temporary email using timestamp and random number
-        const timestamp = Date.now();
-        const randomNum = Math.floor(Math.random() * 10000);
-        const tempEmail = `customer-${timestamp}-${randomNum}@temp.local`;
+        // Use provided email or create unique temporary email
+        let customerEmail = newCustomer.email.trim();
+        if (!customerEmail) {
+          const timestamp = Date.now();
+          const randomNum = Math.floor(Math.random() * 10000);
+          customerEmail = `customer-${timestamp}-${randomNum}@temp.local`;
+        }
         
         const { data: customerData, error: customerError } = await supabase
           .from('customers')
           .insert({
             first_name: firstName,
             last_name: lastName,
-            email: tempEmail,
+            email: customerEmail,
             phone: newCustomer.phone,
             address_line1: newCustomer.address,
             city: newCustomer.city
@@ -224,6 +229,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
       setShowNewCustomerForm(false);
       setNewCustomer({
         full_name: '',
+        email: '',
         phone: '',
         address: '',
         city: ''
@@ -284,7 +290,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="full_name">Full Name</Label>
+                    <Label htmlFor="full_name">Full Name *</Label>
                     <Input
                       id="full_name"
                       value={newCustomer.full_name}
@@ -294,7 +300,18 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                   </div>
                   
                   <div>
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newCustomer.email}
+                      onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
+                      placeholder="Enter email address (optional)"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       id="phone"
                       value={newCustomer.phone}
@@ -304,7 +321,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                   </div>
                   
                   <div>
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">Address *</Label>
                     <Input
                       id="address"
                       value={newCustomer.address}
@@ -314,7 +331,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                   </div>
                   
                   <div>
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city">City *</Label>
                     <Input
                       id="city"
                       value={newCustomer.city}
