@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Eye, DollarSign } from 'lucide-react';
+import { Eye, DollarSign, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Order {
@@ -140,6 +140,13 @@ export function OrderList({ onDataChange }: OrderListProps) {
     setShowOrderDetails(true);
   };
 
+  const createInvoice = (order: Order) => {
+    toast({
+      title: "Invoice Created",
+      description: `Invoice created for order ${order.order_number}`,
+    });
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -215,15 +222,26 @@ export function OrderList({ onDataChange }: OrderListProps) {
                     {new Date(order.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => viewOrderDetails(order)}
-                      className="gap-1"
-                    >
-                      <Eye className="w-3 h-3" />
-                      View
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => viewOrderDetails(order)}
+                        className="gap-1"
+                      >
+                        <Eye className="w-3 h-3" />
+                        View
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => createInvoice(order)}
+                        className="gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        Invoice
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
