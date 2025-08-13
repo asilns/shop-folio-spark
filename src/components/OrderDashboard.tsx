@@ -4,7 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, ShoppingCart, ClipboardList, XCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { PlusCircle, ShoppingCart, ClipboardList, XCircle, Settings } from 'lucide-react';
 import { CustomerList } from './CustomerList';
 import { ProductList } from './ProductList';
 import { OrderList } from './OrderList';
@@ -25,6 +27,9 @@ export function OrderDashboard() {
     cancelledOrders: 0,
   });
   const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const [currency, setCurrency] = useState(() => {
+    return localStorage.getItem('app-currency') || 'USD';
+  });
   const { toast } = useToast();
 
   const fetchStats = async () => {
@@ -53,6 +58,11 @@ export function OrderDashboard() {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  const handleCurrencyChange = (newCurrency: string) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('app-currency', newCurrency);
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -109,6 +119,7 @@ export function OrderDashboard() {
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="orders" className="space-y-4">
@@ -122,12 +133,49 @@ export function OrderDashboard() {
         <TabsContent value="products" className="space-y-4">
           <ProductList onDataChange={fetchStats} />
         </TabsContent>
+        
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Application Settings
+              </CardTitle>
+              <CardDescription>Configure your application preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="currency">Default Currency</Label>
+                <Select value={currency} onValueChange={handleCurrencyChange}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD - US Dollar</SelectItem>
+                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                    <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                    <SelectItem value="JPY">JPY - Japanese Yen</SelectItem>
+                    <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
+                    <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
+                    <SelectItem value="CHF">CHF - Swiss Franc</SelectItem>
+                    <SelectItem value="CNY">CNY - Chinese Yuan</SelectItem>
+                    <SelectItem value="INR">INR - Indian Rupee</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  This currency will be used as the default for new orders.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <CreateOrderDialog 
         open={showCreateOrder} 
         onOpenChange={setShowCreateOrder}
         onOrderCreated={fetchStats}
+        defaultCurrency={currency}
       />
     </div>
   );

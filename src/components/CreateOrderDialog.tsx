@@ -42,9 +42,10 @@ interface CreateOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOrderCreated?: () => void;
+  defaultCurrency?: string;
 }
 
-export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: CreateOrderDialogProps) {
+export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultCurrency = 'USD' }: CreateOrderDialogProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
@@ -183,7 +184,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
         .insert({
           customer_id: customerId,
           total_amount: totalAmount,
-          currency: 'USD',
+          currency: defaultCurrency,
           status: 'pending',
           order_number: '' // This will be replaced by trigger
         })
