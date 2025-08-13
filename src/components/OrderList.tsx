@@ -64,6 +64,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [dateFromFilter, setDateFromFilter] = useState<Date | undefined>(undefined);
   const [dateToFilter, setDateToFilter] = useState<Date | undefined>(undefined);
   const [showFilters, setShowFilters] = useState(false);
+  const [fromDateOpen, setFromDateOpen] = useState(false);
+  const [toDateOpen, setToDateOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchOrders = async () => {
@@ -310,6 +312,23 @@ export function OrderList({ onDataChange }: OrderListProps) {
     setStatusFilter('all');
     setDateFromFilter(undefined);
     setDateToFilter(undefined);
+    setFromDateOpen(false);
+    setToDateOpen(false);
+  };
+
+  const handleFromDateSelect = (date: Date | undefined) => {
+    setDateFromFilter(date);
+    if (date) {
+      setFromDateOpen(false);
+      setToDateOpen(true);
+    }
+  };
+
+  const handleToDateSelect = (date: Date | undefined) => {
+    setDateToFilter(date);
+    if (date) {
+      setToDateOpen(false);
+    }
   };
 
   const hasActiveFilters = (statusFilter && statusFilter !== 'all') || dateFromFilter || dateToFilter;
@@ -384,7 +403,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                    <div className="grid grid-cols-2 gap-2">
                      <div>
                        <label className="text-xs text-muted-foreground mb-1 block">From</label>
-                       <Popover>
+                       <Popover open={fromDateOpen} onOpenChange={setFromDateOpen}>
                          <PopoverTrigger asChild>
                            <Button
                              variant="outline"
@@ -398,7 +417,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                            <Calendar
                              mode="single"
                              selected={dateFromFilter}
-                             onSelect={setDateFromFilter}
+                             onSelect={handleFromDateSelect}
                              initialFocus
                              className="p-3 pointer-events-auto"
                            />
@@ -407,7 +426,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                      </div>
                      <div>
                        <label className="text-xs text-muted-foreground mb-1 block">To</label>
-                       <Popover>
+                       <Popover open={toDateOpen} onOpenChange={setToDateOpen}>
                          <PopoverTrigger asChild>
                            <Button
                              variant="outline"
@@ -421,7 +440,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                            <Calendar
                              mode="single"
                              selected={dateToFilter}
-                             onSelect={setDateToFilter}
+                             onSelect={handleToDateSelect}
                              initialFocus
                              className="p-3 pointer-events-auto"
                            />
