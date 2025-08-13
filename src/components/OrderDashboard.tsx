@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { PlusCircle, ShoppingCart, ClipboardList, XCircle, Settings } from 'lucide-react';
 import { CustomerList } from './CustomerList';
 import { ProductList } from './ProductList';
@@ -29,6 +30,9 @@ export function OrderDashboard() {
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [currency, setCurrency] = useState(() => {
     return localStorage.getItem('app-currency') || 'USD';
+  });
+  const [startingOrderNumber, setStartingOrderNumber] = useState(() => {
+    return parseInt(localStorage.getItem('starting-order-number') || '1');
   });
   const { toast } = useToast();
 
@@ -62,6 +66,40 @@ export function OrderDashboard() {
   const handleCurrencyChange = (newCurrency: string) => {
     setCurrency(newCurrency);
     localStorage.setItem('app-currency', newCurrency);
+  };
+
+  const handleStartingOrderNumberChange = async (newNumber: number) => {
+    try {
+      // Update the sequence in the database
+      const { error } = await supabase.rpc('reset_order_sequence', { 
+        new_start: newNumber 
+      });
+
+      if (error) {
+        console.error('Error updating order sequence:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update starting order number",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setStartingOrderNumber(newNumber);
+      localStorage.setItem('starting-order-number', newNumber.toString());
+      
+      toast({
+        title: "Success",
+        description: `Starting order number updated to ${newNumber}`,
+      });
+    } catch (error) {
+      console.error('Error updating starting order number:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update starting order number",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -322,6 +360,33 @@ export function OrderDashboard() {
                 </Select>
                 <p className="text-sm text-muted-foreground">
                   This currency will be used as the default for new orders.
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="starting-order-number">Starting Order Number</Label>
+                <div className="flex gap-2 items-end">
+                  <Input
+                    id="starting-order-number"
+                    type="number"
+                    min="1"
+                    value={startingOrderNumber}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      setStartingOrderNumber(value);
+                    }}
+                    className="w-48"
+                    placeholder="Enter starting number"
+                  />
+                  <Button 
+                    onClick={() => handleStartingOrderNumberChange(startingOrderNumber)}
+                    variant="outline"
+                  >
+                    Update
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Set the starting number for your order sequence. The next order will start from this number.
                 </p>
               </div>
             </CardContent>
