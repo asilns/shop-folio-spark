@@ -9,6 +9,7 @@ import { CustomerList } from './CustomerList';
 import { ProductList } from './ProductList';
 import { OrderList } from './OrderList';
 import { CreateOrderDialog } from './CreateOrderDialog';
+import { ThemeToggle } from './theme-toggle';
 import { useToast } from '@/hooks/use-toast';
 
 interface DashboardStats {
@@ -60,10 +61,13 @@ export function OrderDashboard() {
           <h1 className="text-3xl font-bold">Order Management Dashboard</h1>
           <p className="text-muted-foreground">Manage your customers, products, and orders</p>
         </div>
-        <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
-          <PlusCircle className="w-4 h-4" />
-          Create Order
-        </Button>
+        <div className="flex gap-2">
+          <ThemeToggle />
+          <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
+            <PlusCircle className="w-4 h-4" />
+            Create Order
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
