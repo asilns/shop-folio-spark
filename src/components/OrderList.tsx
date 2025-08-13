@@ -61,7 +61,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [dateFromFilter, setDateFromFilter] = useState<Date | undefined>(undefined);
+  const [dateToFilter, setDateToFilter] = useState<Date | undefined>(undefined);
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
 
@@ -83,17 +84,17 @@ export function OrderList({ onDataChange }: OrderListProps) {
         query = query.eq('status', statusFilter);
       }
 
-      // Apply date filter (orders created on the selected date)
-      if (dateFilter) {
-        const startOfDay = new Date(dateFilter);
+      // Apply date range filter
+      if (dateFromFilter) {
+        const startOfDay = new Date(dateFromFilter);
         startOfDay.setHours(0, 0, 0, 0);
-        
-        const endOfDay = new Date(dateFilter);
+        query = query.gte('created_at', startOfDay.toISOString());
+      }
+      
+      if (dateToFilter) {
+        const endOfDay = new Date(dateToFilter);
         endOfDay.setHours(23, 59, 59, 999);
-        
-        query = query
-          .gte('created_at', startOfDay.toISOString())
-          .lte('created_at', endOfDay.toISOString());
+        query = query.lte('created_at', endOfDay.toISOString());
       }
 
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -303,14 +304,15 @@ export function OrderList({ onDataChange }: OrderListProps) {
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter, dateFilter]);
+  }, [statusFilter, dateFromFilter, dateToFilter]);
 
   const clearFilters = () => {
     setStatusFilter('all');
-    setDateFilter(undefined);
+    setDateFromFilter(undefined);
+    setDateToFilter(undefined);
   };
 
-  const hasActiveFilters = (statusFilter && statusFilter !== 'all') || dateFilter;
+  const hasActiveFilters = (statusFilter && statusFilter !== 'all') || dateFromFilter || dateToFilter;
 
   if (loading) {
     return <div>Loading orders...</div>;
@@ -332,11 +334,11 @@ export function OrderList({ onDataChange }: OrderListProps) {
             >
               <Filter className="w-4 h-4" />
               Filters
-              {hasActiveFilters && (
-                <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
-                  {(statusFilter ? 1 : 0) + (dateFilter ? 1 : 0)}
-                </span>
-              )}
+               {hasActiveFilters && (
+                 <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
+                   {(statusFilter && statusFilter !== 'all' ? 1 : 0) + (dateFromFilter ? 1 : 0) + (dateToFilter ? 1 : 0)}
+                 </span>
+               )}
             </Button>
           </div>
         </CardHeader>
@@ -378,28 +380,56 @@ export function OrderList({ onDataChange }: OrderListProps) {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Date Created</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateFilter ? format(dateFilter, "PPP") : "Select date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateFilter}
-                        onSelect={setDateFilter}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                   <label className="text-sm font-medium">Date Range</label>
+                   <div className="grid grid-cols-2 gap-2">
+                     <div>
+                       <label className="text-xs text-muted-foreground mb-1 block">From</label>
+                       <Popover>
+                         <PopoverTrigger asChild>
+                           <Button
+                             variant="outline"
+                             className="w-full justify-start text-left font-normal"
+                           >
+                             <CalendarIcon className="mr-2 h-4 w-4" />
+                             {dateFromFilter ? format(dateFromFilter, "MMM d") : "From date"}
+                           </Button>
+                         </PopoverTrigger>
+                         <PopoverContent className="w-auto p-0" align="start">
+                           <Calendar
+                             mode="single"
+                             selected={dateFromFilter}
+                             onSelect={setDateFromFilter}
+                             initialFocus
+                             className="p-3 pointer-events-auto"
+                           />
+                         </PopoverContent>
+                       </Popover>
+                     </div>
+                     <div>
+                       <label className="text-xs text-muted-foreground mb-1 block">To</label>
+                       <Popover>
+                         <PopoverTrigger asChild>
+                           <Button
+                             variant="outline"
+                             className="w-full justify-start text-left font-normal"
+                           >
+                             <CalendarIcon className="mr-2 h-4 w-4" />
+                             {dateToFilter ? format(dateToFilter, "MMM d") : "To date"}
+                           </Button>
+                         </PopoverTrigger>
+                         <PopoverContent className="w-auto p-0" align="start">
+                           <Calendar
+                             mode="single"
+                             selected={dateToFilter}
+                             onSelect={setDateToFilter}
+                             initialFocus
+                             className="p-3 pointer-events-auto"
+                           />
+                         </PopoverContent>
+                       </Popover>
+                     </div>
+                   </div>
+                 </div>
               </div>
             </div>
           )}
@@ -419,19 +449,32 @@ export function OrderList({ onDataChange }: OrderListProps) {
                   </Button>
                 </div>
               )}
-              {dateFilter && (
-                <div className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                  Date: {format(dateFilter, "MMM d, yyyy")}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-0 ml-1 hover:bg-transparent"
-                    onClick={() => setDateFilter(undefined)}
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              )}
+               {dateFromFilter && (
+                 <div className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                   From: {format(dateFromFilter, "MMM d, yyyy")}
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     className="h-auto p-0 ml-1 hover:bg-transparent"
+                     onClick={() => setDateFromFilter(undefined)}
+                   >
+                     <X className="w-3 h-3" />
+                   </Button>
+                 </div>
+               )}
+               {dateToFilter && (
+                 <div className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                   To: {format(dateToFilter, "MMM d, yyyy")}
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     className="h-auto p-0 ml-1 hover:bg-transparent"
+                     onClick={() => setDateToFilter(undefined)}
+                   >
+                     <X className="w-3 h-3" />
+                   </Button>
+                 </div>
+               )}
             </div>
           )}
 
