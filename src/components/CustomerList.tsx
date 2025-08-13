@@ -80,13 +80,8 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
       
-      // Use provided email or create unique temporary email
-      let customerEmail = formData.email.trim();
-      if (!customerEmail) {
-        const timestamp = Date.now();
-        const randomNum = Math.floor(Math.random() * 10000);
-        customerEmail = `customer-${timestamp}-${randomNum}@temp.local`;
-      }
+      // Use provided email or null if not provided
+      const customerEmail = formData.email.trim() || null;
 
       const { error } = await supabase
         .from('customers')

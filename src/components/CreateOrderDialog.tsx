@@ -163,13 +163,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
-        // Use provided email or create unique temporary email
-        let customerEmail = newCustomer.email.trim();
-        if (!customerEmail) {
-          const timestamp = Date.now();
-          const randomNum = Math.floor(Math.random() * 10000);
-          customerEmail = `customer-${timestamp}-${randomNum}@temp.local`;
-        }
+        // Use provided email or null if not provided
+        const customerEmail = newCustomer.email.trim() || null;
         
         const { data: customerData, error: customerError } = await supabase
           .from('customers')
