@@ -32,15 +32,10 @@ interface OrderItem {
 }
 
 interface NewCustomer {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  address_line1?: string;
-  city?: string;
-  state?: string;
-  postal_code?: string;
-  country?: string;
+  full_name: string;
+  phone: string;
+  address: string;
+  city: string;
 }
 
 interface CreateOrderDialogProps {
@@ -57,15 +52,10 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
   const [loading, setLoading] = useState(false);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [newCustomer, setNewCustomer] = useState<NewCustomer>({
-    first_name: '',
-    last_name: '',
-    email: '',
+    full_name: '',
     phone: '',
-    address_line1: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: ''
+    address: '',
+    city: ''
   });
   const { toast } = useToast();
 
@@ -138,10 +128,10 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
     }
 
     // Validate new customer form if creating new customer
-    if (showNewCustomerForm && (!newCustomer.first_name || !newCustomer.last_name || !newCustomer.email)) {
+    if (showNewCustomerForm && (!newCustomer.full_name || !newCustomer.phone || !newCustomer.address || !newCustomer.city)) {
       toast({
         title: "Error",
-        description: "Please fill in required customer fields (name and email)",
+        description: "Please fill in all customer fields",
         variant: "destructive",
       });
       return;
@@ -165,9 +155,21 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
 
       // Create customer if new customer form is being used
       if (showNewCustomerForm) {
+        // Parse full name into first and last name
+        const nameParts = newCustomer.full_name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
         const { data: customerData, error: customerError } = await supabase
           .from('customers')
-          .insert(newCustomer)
+          .insert({
+            first_name: firstName,
+            last_name: lastName,
+            email: `${firstName.toLowerCase()}${lastName.toLowerCase()}@temp.com`, // Temporary email since it's required
+            phone: newCustomer.phone,
+            address_line1: newCustomer.address,
+            city: newCustomer.city
+          })
           .select()
           .single();
 
@@ -215,15 +217,10 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
       setOrderItems([]);
       setShowNewCustomerForm(false);
       setNewCustomer({
-        first_name: '',
-        last_name: '',
-        email: '',
+        full_name: '',
         phone: '',
-        address_line1: '',
-        city: '',
-        state: '',
-        postal_code: '',
-        country: ''
+        address: '',
+        city: ''
       });
       onOpenChange(false);
       onOrderCreated?.();
@@ -280,87 +277,44 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated }: Create
                   <CardTitle className="text-lg">New Customer</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="first_name">First Name *</Label>
-                      <Input
-                        id="first_name"
-                        value={newCustomer.first_name}
-                        onChange={(e) => setNewCustomer({...newCustomer, first_name: e.target.value})}
-                        placeholder="Enter first name"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="last_name">Last Name *</Label>
-                      <Input
-                        id="last_name"
-                        value={newCustomer.last_name}
-                        onChange={(e) => setNewCustomer({...newCustomer, last_name: e.target.value})}
-                        placeholder="Enter last name"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      value={newCustomer.full_name}
+                      onChange={(e) => setNewCustomer({...newCustomer, full_name: e.target.value})}
+                      placeholder="Enter full name"
+                    />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={newCustomer.email}
-                        onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
-                        placeholder="Enter email address"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        value={newCustomer.phone}
-                        onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
-                        placeholder="Enter phone number"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={newCustomer.phone}
+                      onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
+                      placeholder="Enter phone number"
+                    />
                   </div>
                   
                   <div>
                     <Label htmlFor="address">Address</Label>
                     <Input
                       id="address"
-                      value={newCustomer.address_line1}
-                      onChange={(e) => setNewCustomer({...newCustomer, address_line1: e.target.value})}
+                      value={newCustomer.address}
+                      onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})}
                       placeholder="Enter street address"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={newCustomer.city}
-                        onChange={(e) => setNewCustomer({...newCustomer, city: e.target.value})}
-                        placeholder="Enter city"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="state">State</Label>
-                      <Input
-                        id="state"
-                        value={newCustomer.state}
-                        onChange={(e) => setNewCustomer({...newCustomer, state: e.target.value})}
-                        placeholder="Enter state"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="postal_code">Postal Code</Label>
-                      <Input
-                        id="postal_code"
-                        value={newCustomer.postal_code}
-                        onChange={(e) => setNewCustomer({...newCustomer, postal_code: e.target.value})}
-                        placeholder="Enter postal code"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      value={newCustomer.city}
+                      onChange={(e) => setNewCustomer({...newCustomer, city: e.target.value})}
+                      placeholder="Enter city"
+                    />
                   </div>
                 </CardContent>
               </Card>
