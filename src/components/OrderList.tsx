@@ -8,7 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, DollarSign, FileText, Trash2 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { Eye, DollarSign, FileText, Trash2, Filter, CalendarIcon, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Order {
@@ -57,11 +60,14 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [loading, setLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('orders')
         .select(`
           *,
@@ -70,8 +76,27 @@ export function OrderList({ onDataChange }: OrderListProps) {
             last_name,
             email
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
+
+      // Apply status filter
+      if (statusFilter) {
+        query = query.eq('status', statusFilter);
+      }
+
+      // Apply date filter (orders created on the selected date)
+      if (dateFilter) {
+        const startOfDay = new Date(dateFilter);
+        startOfDay.setHours(0, 0, 0, 0);
+        
+        const endOfDay = new Date(dateFilter);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        query = query
+          .gte('created_at', startOfDay.toISOString())
+          .lte('created_at', endOfDay.toISOString());
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setOrders(data || []);
@@ -278,7 +303,14 @@ export function OrderList({ onDataChange }: OrderListProps) {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [statusFilter, dateFilter]);
+
+  const clearFilters = () => {
+    setStatusFilter('');
+    setDateFilter(undefined);
+  };
+
+  const hasActiveFilters = statusFilter || dateFilter;
 
   if (loading) {
     return <div>Loading orders...</div>;
@@ -288,10 +320,121 @@ export function OrderList({ onDataChange }: OrderListProps) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Orders</CardTitle>
-          <CardDescription>View and manage customer orders</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Orders</CardTitle>
+              <CardDescription>View and manage customer orders</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+              {hasActiveFilters && (
+                <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
+                  {(statusFilter ? 1 : 0) + (dateFilter ? 1 : 0)}
+                </span>
+              )}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
+          {showFilters && (
+            <div className="mb-4 p-4 bg-muted rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">Filter Orders</h3>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="gap-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-3 h-3" />
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Status</label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All statuses</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="shipped">Shipped</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Date Created</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateFilter ? format(dateFilter, "PPP") : "Select date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dateFilter}
+                        onSelect={setDateFilter}
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {hasActiveFilters && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              {statusFilter && (
+                <div className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                  Status: {statusFilter}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 ml-1 hover:bg-transparent"
+                    onClick={() => setStatusFilter('')}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+              {dateFilter && (
+                <div className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                  Date: {format(dateFilter, "MMM d, yyyy")}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 ml-1 hover:bg-transparent"
+                    onClick={() => setDateFilter(undefined)}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           {showBulkActions && (
             <div className="mb-4 p-3 bg-muted rounded-lg">
               <div className="flex items-center justify-between">
