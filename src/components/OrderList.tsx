@@ -263,29 +263,27 @@ export function OrderList({ onDataChange }: OrderListProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => viewOrderDetails(order)}
-                        className="gap-1"
+                        title="View Order Details"
                       >
-                        <Eye className="w-3 h-3" />
-                        View
+                        <Eye className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => createInvoice(order)}
-                        className="gap-1"
+                        title="Create Invoice"
                       >
-                        <FileText className="w-3 h-3" />
-                        Invoice
+                        <FileText className="w-4 h-4" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Delete Order"
                           >
-                            <Trash2 className="w-3 h-3" />
-                            Delete
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
