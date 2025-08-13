@@ -60,7 +60,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [loading, setLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
@@ -79,7 +79,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
         `);
 
       // Apply status filter
-      if (statusFilter) {
+      if (statusFilter && statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
 
@@ -306,11 +306,11 @@ export function OrderList({ onDataChange }: OrderListProps) {
   }, [statusFilter, dateFilter]);
 
   const clearFilters = () => {
-    setStatusFilter('');
+    setStatusFilter('all');
     setDateFilter(undefined);
   };
 
-  const hasActiveFilters = statusFilter || dateFilter;
+  const hasActiveFilters = (statusFilter && statusFilter !== 'all') || dateFilter;
 
   if (loading) {
     return <div>Loading orders...</div>;
@@ -366,7 +366,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All statuses</SelectItem>
+                      <SelectItem value="all">All statuses</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="confirmed">Confirmed</SelectItem>
                       <SelectItem value="processing">Processing</SelectItem>
@@ -406,14 +406,14 @@ export function OrderList({ onDataChange }: OrderListProps) {
           
           {hasActiveFilters && (
             <div className="mb-4 flex flex-wrap gap-2">
-              {statusFilter && (
+              {statusFilter && statusFilter !== 'all' && (
                 <div className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
                   Status: {statusFilter}
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-auto p-0 ml-1 hover:bg-transparent"
-                    onClick={() => setStatusFilter('')}
+                    onClick={() => setStatusFilter('all')}
                   >
                     <X className="w-3 h-3" />
                   </Button>
