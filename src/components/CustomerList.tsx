@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { PlusCircle, Mail, Phone, MapPin, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Customer {
@@ -95,6 +96,51 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
       toast({
         title: "Error",
         description: error.message || "Failed to create customer",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteCustomer = async (customerId: string, customerName: string) => {
+    try {
+      // Check if customer has any orders
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('customer_id', customerId)
+        .limit(1);
+
+      if (ordersError) throw ordersError;
+
+      if (orders && orders.length > 0) {
+        toast({
+          title: "Cannot Delete Customer",
+          description: "This customer has existing orders. Please delete the orders first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Delete the customer
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', customerId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Customer ${customerName} deleted successfully`,
+      });
+
+      fetchCustomers();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error deleting customer:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete customer",
         variant: "destructive",
       });
     }
@@ -221,6 +267,7 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
               <TableHead>Contact</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Created</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,11 +303,43 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(customer.created_at).toLocaleDateString()}
                 </TableCell>
+                <TableCell>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Delete Customer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete {customer.first_name} {customer.last_name}? 
+                          This action cannot be undone. Note: Customers with existing orders cannot be deleted.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteCustomer(customer.id, `${customer.first_name} ${customer.last_name}`)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete Customer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
               </TableRow>
             ))}
             {customers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                   No customers found. Add your first customer to get started.
                 </TableCell>
               </TableRow>
