@@ -161,12 +161,17 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
         
+        // Create unique temporary email using timestamp and random number
+        const timestamp = Date.now();
+        const randomNum = Math.floor(Math.random() * 10000);
+        const tempEmail = `customer-${timestamp}-${randomNum}@temp.local`;
+        
         const { data: customerData, error: customerError } = await supabase
           .from('customers')
           .insert({
             first_name: firstName,
             last_name: lastName,
-            email: `${firstName.toLowerCase()}${lastName.toLowerCase()}@temp.com`, // Temporary email since it's required
+            email: tempEmail,
             phone: newCustomer.phone,
             address_line1: newCustomer.address,
             city: newCustomer.city
