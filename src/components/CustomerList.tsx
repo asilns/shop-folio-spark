@@ -32,14 +32,11 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [formData, setFormData] = useState({
+    full_name: '',
     email: '',
-    first_name: '',
-    last_name: '',
     phone: '',
-    address_line1: '',
+    address: '',
     city: '',
-    state: '',
-    country: '',
   });
   const { toast } = useToast();
 
@@ -66,10 +63,41 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.full_name || !formData.phone || !formData.address || !formData.city) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields (name, phone, address, city)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Parse full name into first and last name
+      const nameParts = formData.full_name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      // Use provided email or create unique temporary email
+      let customerEmail = formData.email.trim();
+      if (!customerEmail) {
+        const timestamp = Date.now();
+        const randomNum = Math.floor(Math.random() * 10000);
+        customerEmail = `customer-${timestamp}-${randomNum}@temp.local`;
+      }
+
       const { error } = await supabase
         .from('customers')
-        .insert([formData]);
+        .insert([{
+          first_name: firstName,
+          last_name: lastName,
+          email: customerEmail,
+          phone: formData.phone,
+          address_line1: formData.address,
+          city: formData.city,
+        }]);
 
       if (error) throw error;
 
@@ -79,14 +107,11 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
       });
 
       setFormData({
+        full_name: '',
         email: '',
-        first_name: '',
-        last_name: '',
         phone: '',
-        address_line1: '',
+        address: '',
         city: '',
-        state: '',
-        country: '',
       });
       setShowDialog(false);
       fetchCustomers();
@@ -178,77 +203,55 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="first_name">First Name</Label>
-                      <Input
-                        id="first_name"
-                        value={formData.first_name}
-                        onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="last_name">Last Name</Label>
-                      <Input
-                        id="last_name"
-                        value={formData.last_name}
-                        onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                        required
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="full_name">Full Name *</Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                      placeholder="Enter full name"
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email Address</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
+                      placeholder="Enter email address (optional)"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      placeholder="Enter phone number"
+                      required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="address_line1">Address</Label>
+                    <Label htmlFor="address">Address *</Label>
                     <Input
-                      id="address_line1"
-                      value={formData.address_line1}
-                      onChange={(e) => setFormData({...formData, address_line1: e.target.value})}
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      placeholder="Enter street address"
+                      required
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({...formData, city: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="state">State</Label>
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={(e) => setFormData({...formData, state: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="country">Country</Label>
-                      <Input
-                        id="country"
-                        value={formData.country}
-                        onChange={(e) => setFormData({...formData, country: e.target.value})}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      placeholder="Enter city"
+                      required
+                    />
                   </div>
                 </div>
                 <DialogFooter>
