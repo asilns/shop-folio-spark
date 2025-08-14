@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ interface CustomerListProps {
 }
 
 export function CustomerList({ onDataChange }: CustomerListProps) {
+  const { t } = useLanguage();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -179,8 +181,8 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Customers</CardTitle>
-            <CardDescription>Manage your customer database</CardDescription>
+            <CardTitle>{t('customers')}</CardTitle>
+            <CardDescription>{t('trackCustomers')}</CardDescription>
           </div>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>

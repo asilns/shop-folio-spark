@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ interface ProductListProps {
 }
 
 export function ProductList({ onDataChange }: ProductListProps) {
+  const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -466,8 +468,8 @@ export function ProductList({ onDataChange }: ProductListProps) {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Products</CardTitle>
-            <CardDescription>Manage your product catalog and categories</CardDescription>
+            <CardTitle>{t('products')}</CardTitle>
+            <CardDescription>{t('manageProducts')}</CardDescription>
           </div>
           <div className="flex gap-2">
             <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>

@@ -337,7 +337,7 @@ export function OrderDashboard() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('cancelled')}</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('cancelledOrders')}</CardTitle>
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -681,7 +681,7 @@ export function OrderDashboard() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="city">City</Label>
+                        <Label htmlFor="city">{t('city')}</Label>
                         <Input
                           id="city"
                           value={invoiceSettings.city || ''}
@@ -691,7 +691,7 @@ export function OrderDashboard() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="country">Country</Label>
+                        <Label htmlFor="country">{t('country')}</Label>
                         <Input
                           id="country"
                           value={invoiceSettings.country || ''}
