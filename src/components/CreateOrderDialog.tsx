@@ -305,7 +305,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                 className="gap-2"
               >
                 <UserPlus className="w-4 h-4" />
-                {showNewCustomerForm ? 'Select Existing' : 'Create New'}
+                <span className="hidden sm:inline">{showNewCustomerForm ? 'Select Existing' : 'Create New'}</span>
+                <span className="sm:hidden">{showNewCustomerForm ? 'Select' : 'New'}</span>
               </Button>
             </div>
             
@@ -390,7 +391,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                 <CardTitle className="text-lg">Order Items</CardTitle>
                 <Button onClick={addOrderItem} size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Add Item
+                  <span className="hidden sm:inline">Add Item</span>
                 </Button>
               </div>
             </CardHeader>
@@ -450,14 +451,15 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                       </div>
                     </div>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeOrderItem(index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => removeOrderItem(index)}
+                       className="text-red-600 hover:text-red-700"
+                       title="Remove item"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </Button>
                   </div>
                 );
               })}
@@ -528,10 +530,16 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            <span className="hidden sm:inline">Cancel</span>
+            <span className="sm:hidden">✕</span>
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Creating...' : 'Create Order'}
+            {loading ? 'Creating...' : (
+              <>
+                <span className="hidden sm:inline">Create Order</span>
+                <span className="sm:hidden">Create</span>
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

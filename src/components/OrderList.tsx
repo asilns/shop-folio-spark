@@ -782,12 +782,13 @@ export function OrderList({ onDataChange }: OrderListProps) {
                        ))}
                      </SelectContent>
                   </Select>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        Delete Selected
-                      </Button>
-                    </AlertDialogTrigger>
+                   <AlertDialog>
+                     <AlertDialogTrigger asChild>
+                       <Button variant="destructive" size="sm">
+                         <Trash2 className="w-4 h-4 md:mr-2" />
+                         <span className="hidden md:inline">Delete Selected</span>
+                       </Button>
+                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Selected Orders</AlertDialogTitle>
@@ -979,17 +980,17 @@ export function OrderList({ onDataChange }: OrderListProps) {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold">Customer Information</h4>
-                  {!isEditMode && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setIsEditMode(true)}
-                      className="gap-2"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      Edit Order
-                    </Button>
-                  )}
+                   {!isEditMode && (
+                     <Button 
+                       variant="outline" 
+                       size="sm" 
+                       onClick={() => setIsEditMode(true)}
+                       className="gap-2"
+                     >
+                       <Edit3 className="w-4 h-4" />
+                       <span className="hidden sm:inline">Edit Order</span>
+                     </Button>
+                   )}
                 </div>
                 
                 {isEditMode ? (
@@ -1023,17 +1024,17 @@ export function OrderList({ onDataChange }: OrderListProps) {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold">Order Items</h4>
-                  {isEditMode && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleAddItem}
-                      className="gap-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add Item
-                    </Button>
-                  )}
+                   {isEditMode && (
+                     <Button 
+                       variant="outline" 
+                       size="sm" 
+                       onClick={handleAddItem}
+                       className="gap-2"
+                     >
+                       <Plus className="w-4 h-4" />
+                       <span className="hidden sm:inline">Add Item</span>
+                     </Button>
+                   )}
                 </div>
                 
                 <Table>
@@ -1250,9 +1251,10 @@ export function OrderList({ onDataChange }: OrderListProps) {
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSaveOrderChanges}>
-                  Save Changes
-                </Button>
+                 <Button onClick={handleSaveOrderChanges}>
+                   <span className="hidden sm:inline">Save Changes</span>
+                   <span className="sm:hidden">Save</span>
+                 </Button>
               </div>
             ) : (
               <Button variant="outline" onClick={() => setShowOrderDetails(false)}>

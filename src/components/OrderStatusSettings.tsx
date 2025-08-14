@@ -242,7 +242,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
           </div>
           <Button onClick={openCreateDialog} className="gap-2">
             <PlusCircle className="w-4 h-4" />
-            Add Status
+            <span className="hidden sm:inline">Add Status</span>
           </Button>
         </div>
       </CardHeader>
@@ -279,12 +279,13 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(status)}
+                      title="Edit status"
                     >
                       <Edit3 className="w-4 h-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" title="Delete status">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </AlertDialogTrigger>
@@ -362,12 +363,14 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreate} disabled={!formData.display_name.trim()}>
-                Create Status
-              </Button>
+                          <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                            <span className="hidden sm:inline">Cancel</span>
+                            <span className="sm:hidden">✕</span>
+                          </Button>
+                          <Button onClick={handleCreate} disabled={!formData.display_name.trim()}>
+                            <span className="hidden sm:inline">Create Status</span>
+                            <span className="sm:hidden">Create</span>
+                          </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -425,10 +428,12 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-                Cancel
+                <span className="hidden sm:inline">Cancel</span>
+                <span className="sm:hidden">✕</span>
               </Button>
               <Button onClick={handleEdit} disabled={!formData.display_name.trim()}>
-                Update Status
+                <span className="hidden sm:inline">Update Status</span>
+                <span className="sm:hidden">Update</span>
               </Button>
             </DialogFooter>
           </DialogContent>

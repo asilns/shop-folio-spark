@@ -305,7 +305,7 @@ export function OrderDashboard() {
           <ThemeToggle />
           <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
             <PlusCircle className="w-4 h-4" />
-            Create Order
+            <span className="hidden sm:inline">Create Order</span>
           </Button>
         </div>
       </div>
