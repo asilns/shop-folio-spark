@@ -79,37 +79,32 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          setTimeout(async () => {
-            const adminData = await fetchAdminProfile(session.user.id);
-            setAdmin(adminData);
-            setLoading(false);
-            
-            if (event === 'SIGNED_IN' && adminData) {
-              await logAuditAction('LOGIN');
-            }
-          }, 0);
-        } else {
-          setAdmin(null);
-          setLoading(false);
+    // Check for stored admin session
+    const checkStoredSession = () => {
+      try {
+        const storedSession = localStorage.getItem('admin_session');
+        if (storedSession) {
+          const sessionData = JSON.parse(storedSession);
+          
+          // Check if session is still valid (24 hours)
+          const isValid = sessionData.session && 
+                          sessionData.session.expiresAt > Date.now();
+          
+          if (isValid) {
+            setAdmin(sessionData.admin);
+          } else {
+            localStorage.removeItem('admin_session');
+          }
         }
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchAdminProfile(session.user.id).then((adminData) => {
-          setAdmin(adminData);
-          setLoading(false);
-        });
-      } else {
+      } catch (error) {
+        console.error('Error checking stored session:', error);
+        localStorage.removeItem('admin_session');
+      } finally {
         setLoading(false);
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    checkStoredSession();
   }, []);
 
   const signIn = async (username: string, password: string) => {
@@ -122,14 +117,20 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         return { error: { message: 'Invalid username or password' } };
       }
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password,
-      });
-
-      if (signInError) {
-        return { error: signInError };
-      }
+      // Store admin session data in localStorage
+      const adminSession = {
+        admin: data.admin,
+        session: data.session,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem('admin_session', JSON.stringify(adminSession));
+      
+      // Set the admin state directly
+      setAdmin(data.admin);
+      
+      // Log the successful login
+      await logAuditAction('LOGIN');
 
       return { error: null };
     } catch (error) {
@@ -139,7 +140,15 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Log the logout action
+      if (admin) {
+        await logAuditAction('LOGOUT');
+      }
+      
+      // Clear the stored admin session
+      localStorage.removeItem('admin_session');
+      
+      // Clear the admin state
       setAdmin(null);
     } catch (error) {
       console.error('Error signing out:', error);

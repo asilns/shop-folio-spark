@@ -533,6 +533,10 @@ export type Database = {
         Args: { admin_id: string }
         Returns: string
       }
+      get_user_role: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
       purge_old_deleted_users: {
         Args: Record<PropertyKey, never>
         Returns: undefined

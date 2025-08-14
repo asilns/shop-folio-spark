@@ -42,10 +42,10 @@ const handler = async (req: Request): Promise<Response> => {
         input_password: password
       });
 
-    console.log('Authentication result:', { authResult, authError });
+    console.log('Authentication result:', { success: authResult && authResult.length > 0, authError });
 
     if (authError || !authResult || authResult.length === 0) {
-      console.log('Authentication failed:', authError);
+      console.log('Authentication failed for user:', username);
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid credentials' }),
         { 
@@ -56,64 +56,25 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const admin = authResult[0];
-    console.log('Admin authenticated:', admin.username, admin.role);
+    console.log('Admin authenticated successfully:', admin.username, admin.role);
 
-    // Create or get auth user for this admin
-    let authUserId = admin.admin_id;
-    
-    // Check if auth user exists
-    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(authUserId);
-    
-    if (authUserError || !authUser.user) {
-      // Create auth user if it doesn't exist
-      const email = admin.email || `${username}@admin.local`;
-      const { data: newAuthUser, error: createError } = await supabase.auth.admin.createUser({
-        id: admin.admin_id,
-        email: email,
-        password: password,
-        email_confirm: true,
-        user_metadata: {
-          username: admin.username,
-          role: admin.role,
-          is_admin: true
-        }
-      });
-
-      if (createError || !newAuthUser.user) {
-        console.error('Error creating auth user:', createError);
-        return new Response(
-          JSON.stringify({ success: false, error: 'Authentication setup failed' }),
-          { 
-            status: 500, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-          }
-        );
-      }
-      
-      authUserId = newAuthUser.user.id;
-    } else {
-      // Update password for existing auth user
-      const email = authUser.user.email || admin.email || `${username}@admin.local`;
-      await supabase.auth.admin.updateUserById(authUserId, {
-        password: password,
-        email: email,
-        user_metadata: {
-          username: admin.username,
-          role: admin.role,
-          is_admin: true
-        }
-      });
-    }
-
-    const email = admin.email || `${username}@admin.local`;
-    
-    console.log('Admin authentication successful for:', username);
+    // Create a simple session token (in production, use proper JWT)
+    const sessionToken = btoa(`${admin.admin_id}:${Date.now()}:${Math.random()}`);
+    const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        email: email,
-        role: admin.role 
+        admin: {
+          id: admin.admin_id,
+          username: admin.username,
+          role: admin.role,
+          email: admin.email
+        },
+        session: {
+          token: sessionToken,
+          expiresAt: expiresAt
+        }
       }),
       { 
         status: 200, 
