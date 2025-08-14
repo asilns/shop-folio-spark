@@ -1032,7 +1032,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                               <SelectContent>
                                 {products.map((product) => (
                                   <SelectItem key={product.id} value={product.id}>
-                                    {product.name} - ${product.price}
+                                    {product.name} - {product.price}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1059,8 +1059,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
                             item.quantity
                           )}
                         </TableCell>
-                        <TableCell>${item.unit_price.toFixed(2)}</TableCell>
-                        <TableCell>${item.total_price.toFixed(2)}</TableCell>
+                         <TableCell>{item.unit_price.toFixed(2)}</TableCell>
+                         <TableCell>{item.total_price.toFixed(2)}</TableCell>
                         {isEditMode && (
                           <TableCell>
                             <Button
@@ -1126,9 +1126,9 @@ export function OrderList({ onDataChange }: OrderListProps) {
                     </div>
                   ) : (
                     <div className="text-sm">
-                      {selectedOrder.discount && selectedOrder.discount > 0 ? (
-                        `$${selectedOrder.discount.toFixed(2)}`
-                      ) : (
+                       {selectedOrder.discount && selectedOrder.discount > 0 ? (
+                         `${selectedOrder.discount.toFixed(2)}`
+                       ) : (
                         'No discount applied'
                       )}
                     </div>
@@ -1142,27 +1142,27 @@ export function OrderList({ onDataChange }: OrderListProps) {
                       <>
                         <div className="flex justify-between">
                           <span>Subtotal:</span>
-                          <span>
-                            ${editOrderItems
-                              .filter(item => !item.isDeleted)
-                              .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
-                              .toFixed(2)}
-                          </span>
+                           <span>
+                             {editOrderItems
+                               .filter(item => !item.isDeleted)
+                               .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
+                               .toFixed(2)}
+                           </span>
                         </div>
                         {editOrderData.discount > 0 && (
                           <div className="flex justify-between text-red-600">
                             <span>Discount:</span>
-                            <span>-${editOrderData.discount.toFixed(2)}</span>
+                            <span>-{editOrderData.discount.toFixed(2)}</span>
                           </div>
                         )}
                         <div className="flex justify-between font-medium border-t pt-2">
                           <span>Total:</span>
-                          <span>
-                            ${(editOrderItems
-                              .filter(item => !item.isDeleted)
-                              .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0) - editOrderData.discount
-                            ).toFixed(2)} {selectedOrder.currency}
-                          </span>
+                           <span>
+                             {(editOrderItems
+                               .filter(item => !item.isDeleted)
+                               .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0) - editOrderData.discount
+                             ).toFixed(2)} {selectedOrder.currency}
+                           </span>
                         </div>
                       </>
                     ) : (
@@ -1171,17 +1171,17 @@ export function OrderList({ onDataChange }: OrderListProps) {
                           <>
                             <div className="flex justify-between">
                               <span>Subtotal:</span>
-                              <span>${(selectedOrder.total_amount + selectedOrder.discount).toFixed(2)}</span>
+                              <span>{(selectedOrder.total_amount + selectedOrder.discount).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-red-600">
                               <span>Discount:</span>
-                              <span>-${selectedOrder.discount.toFixed(2)}</span>
+                              <span>-{selectedOrder.discount.toFixed(2)}</span>
                             </div>
                           </>
                         )}
                         <div className="flex justify-between font-medium">
                           <span>Total:</span>
-                          <span>${selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</span>
+                          <span>{selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</span>
                         </div>
                         <div className="text-muted-foreground mt-2">
                           Status: <Badge className={statusColors[selectedOrder.status as keyof typeof statusColors]}>{selectedOrder.status}</Badge>
