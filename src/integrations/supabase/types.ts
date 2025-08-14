@@ -525,6 +525,18 @@ export type Database = {
           username: string
         }[]
       }
+      authenticate_store_user: {
+        Args: { p_password: string; p_username: string }
+        Returns: {
+          id: string
+          last_login: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          username: string
+        }[]
+      }
       create_managed_user: {
         Args: {
           p_password_hash: string
@@ -534,7 +546,15 @@ export type Database = {
           p_subscription_expiry: string
           p_username: string
         }
-        Returns: string
+        Returns: {
+          created_at: string
+          id: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          username: string
+        }[]
       }
       delete_managed_user: {
         Args: { p_admin_username: string; p_user_id: string }

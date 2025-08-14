@@ -129,15 +129,30 @@ export default function UserManagementTab() {
         return;
       }
 
+      // The function now returns the created user data
+      const newUser = data[0];
+      
       await logAuditAction('CREATE', formData.username, `Created user: ${formData.store_name}`);
       
+      // Optimistically update the UI
+      if (newUser) {
+        setUsers(prev => [{
+          ...newUser,
+          password_hash: '',
+          last_login: null,
+          updated_at: newUser.created_at
+        }, ...prev]);
+      }
+      
       toast({
-        title: 'Success',
-        description: 'User created successfully',
+        title: 'User created',
+        description: `User ${newUser?.username} created successfully`,
       });
 
       setShowCreateDialog(false);
       resetForm();
+      
+      // Revalidate server data
       fetchUsers();
     } catch (error) {
       console.error('Error creating user:', error);
