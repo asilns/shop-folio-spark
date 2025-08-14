@@ -145,13 +145,15 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
           line-height: 1.4;
           color: #333;
           background: #fff;
-          padding: 40px;
+          padding: 40px 60px;
+          margin: 0;
         }
 
         .invoice-container {
           max-width: 800px;
           margin: 0 auto;
           background: #fff;
+          padding: 0 20px;
         }
 
         .header {
@@ -322,8 +324,8 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
         }
 
         @media print {
-          body { padding: 0; }
-          .invoice-container { box-shadow: none; }
+          body { padding: 20px 40px; }
+          .invoice-container { box-shadow: none; padding: 0 10px; }
         }
       </style>
     </head>
