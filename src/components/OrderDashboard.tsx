@@ -138,7 +138,7 @@ export function OrderDashboard() {
 
   const handleStartingOrderNumberChange = async (newNumber: number) => {
     try {
-      // Update the sequence in the database
+      // Reset the sequence in the database
       const { error } = await supabase
         .rpc('reset_order_sequence', { 
           new_start: newNumber 
@@ -159,7 +159,7 @@ export function OrderDashboard() {
       
       toast({
         title: "Success",
-        description: `Starting order number updated to ${newNumber}`,
+        description: `Starting order number updated to ${newNumber}. Next new order will use this as the base number.`,
       });
     } catch (error) {
       console.error('Error updating starting order number:', error);
