@@ -110,19 +110,15 @@ export default function UserManagementTab() {
     }
 
     try {
-      // Hash password and PIN
-      const hashedPassword = `crypt('${formData.password}', gen_salt('bf'))`;
-      
-      const { error } = await supabase
-        .from('managed_users')
-        .insert({
-          store_name: formData.store_name,
-          username: formData.username,
-          password_hash: hashedPassword,
-          pin: formData.pin,
-          subscription_date: formData.subscription_date,
-          subscription_expiry: formData.subscription_expiry
-        });
+      // Use the new database function to create user
+      const { data, error } = await supabase.rpc('create_managed_user', {
+        p_store_name: formData.store_name,
+        p_username: formData.username,
+        p_password_hash: `crypt('${formData.password}', gen_salt('bf'))`,
+        p_pin: formData.pin,
+        p_subscription_date: formData.subscription_date,
+        p_subscription_expiry: formData.subscription_expiry
+      });
 
       if (error) {
         toast({
@@ -164,23 +160,16 @@ export default function UserManagementTab() {
     }
 
     try {
-      const updateData: any = {
-        store_name: formData.store_name,
-        username: formData.username,
-        pin: formData.pin,
-        subscription_date: formData.subscription_date,
-        subscription_expiry: formData.subscription_expiry
-      };
-
-      // Only update password if provided
-      if (formData.password) {
-        updateData.password_hash = `crypt('${formData.password}', gen_salt('bf'))`;
-      }
-
-      const { error } = await supabase
-        .from('managed_users')
-        .update(updateData)
-        .eq('id', editingUser.id);
+      // Use the new database function to update user
+      const { data, error } = await supabase.rpc('update_managed_user', {
+        p_user_id: editingUser.id,
+        p_store_name: formData.store_name,
+        p_username: formData.username,
+        p_password_hash: formData.password ? `crypt('${formData.password}', gen_salt('bf'))` : null,
+        p_pin: formData.pin,
+        p_subscription_date: formData.subscription_date,
+        p_subscription_expiry: formData.subscription_expiry
+      });
 
       if (error) {
         toast({

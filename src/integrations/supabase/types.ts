@@ -525,6 +525,21 @@ export type Database = {
           username: string
         }[]
       }
+      create_managed_user: {
+        Args: {
+          p_password_hash: string
+          p_pin: string
+          p_store_name: string
+          p_subscription_date: string
+          p_subscription_expiry: string
+          p_username: string
+        }
+        Returns: string
+      }
+      delete_managed_user: {
+        Args: { p_admin_username: string; p_user_id: string }
+        Returns: boolean
+      }
       generate_order_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -552,6 +567,18 @@ export type Database = {
       soft_delete_user: {
         Args: { admin_username: string; user_id: string }
         Returns: undefined
+      }
+      update_managed_user: {
+        Args: {
+          p_password_hash?: string
+          p_pin?: string
+          p_store_name?: string
+          p_subscription_date?: string
+          p_subscription_expiry?: string
+          p_user_id: string
+          p_username?: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
