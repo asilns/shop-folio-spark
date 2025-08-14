@@ -4,14 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { Eye, DollarSign, FileText, Trash2, Filter, CalendarIcon, X } from 'lucide-react';
+import { Eye, DollarSign, FileText, Trash2, Filter, CalendarIcon, X, Edit3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Order {
@@ -67,6 +69,12 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [fromDateOpen, setFromDateOpen] = useState(false);
   const [toDateOpen, setToDateOpen] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    discount: '',
+    notes: ''
+  });
   const { toast } = useToast();
 
   const fetchOrders = async () => {
@@ -294,6 +302,60 @@ export function OrderList({ onDataChange }: OrderListProps) {
       toast({
         title: "Error",
         description: error.message || "Failed to update orders",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditOrder = (order: Order) => {
+    setEditingOrder(order);
+    setEditFormData({
+      discount: order.discount?.toString() || '',
+      notes: ''
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingOrder) return;
+
+    try {
+      const updateData: any = {};
+      
+      if (editFormData.discount !== editingOrder.discount?.toString()) {
+        updateData.discount = editFormData.discount ? parseFloat(editFormData.discount) : 0;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        toast({
+          title: "No Changes",
+          description: "No changes were made to the order",
+        });
+        setShowEditDialog(false);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', editingOrder.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Order ${editingOrder.order_number} updated successfully`,
+      });
+
+      setShowEditDialog(false);
+      setEditingOrder(null);
+      fetchOrders();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error updating order:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update order",
         variant: "destructive",
       });
     }
@@ -669,24 +731,32 @@ export function OrderList({ onDataChange }: OrderListProps) {
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(order.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => viewOrderDetails(order)}
-                        title="View Order Details"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => createInvoice(order)}
-                        title="Create Invoice"
-                      >
-                        <FileText className="w-4 h-4" />
-                      </Button>
+                   <TableCell>
+                     <div className="flex gap-2">
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => handleEditOrder(order)}
+                         title="Edit Order"
+                       >
+                         <Edit3 className="w-4 h-4" />
+                       </Button>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => viewOrderDetails(order)}
+                         title="View Order Details"
+                       >
+                         <Eye className="w-4 h-4" />
+                       </Button>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => createInvoice(order)}
+                         title="Create Invoice"
+                       >
+                         <FileText className="w-4 h-4" />
+                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
@@ -800,6 +870,65 @@ export function OrderList({ onDataChange }: OrderListProps) {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Order Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Order - {editingOrder?.order_number}</DialogTitle>
+            <DialogDescription>
+              Update order details. Only modifiable fields are shown.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingOrder && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-discount">Discount Amount</Label>
+                <Input
+                  id="edit-discount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={editFormData.discount}
+                  onChange={(e) => setEditFormData({...editFormData, discount: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="text-sm">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{editingOrder.total_amount.toFixed(2)} {editingOrder.currency}</span>
+                  </div>
+                  {editFormData.discount && parseFloat(editFormData.discount) > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Discount:</span>
+                      <span>-{parseFloat(editFormData.discount).toFixed(2)} {editingOrder.currency}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-medium border-t pt-1 mt-1">
+                    <span>New Total:</span>
+                    <span>
+                      {(editingOrder.total_amount - (parseFloat(editFormData.discount) || 0)).toFixed(2)} {editingOrder.currency}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditSubmit}>
+              Update Order
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
