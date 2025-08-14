@@ -62,6 +62,57 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_settings: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          facebook_account: string | null
+          id: string
+          instagram_account: string | null
+          phone_number: string | null
+          postal_code: string | null
+          snapchat_account: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          facebook_account?: string | null
+          id?: string
+          instagram_account?: string | null
+          phone_number?: string | null
+          postal_code?: string | null
+          snapchat_account?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          facebook_account?: string | null
+          id?: string
+          instagram_account?: string | null
+          phone_number?: string | null
+          postal_code?: string | null
+          snapchat_account?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string

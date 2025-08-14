@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, ShoppingCart, ClipboardList, XCircle, Settings } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { PlusCircle, ShoppingCart, ClipboardList, XCircle, Settings, FileText } from 'lucide-react';
 import { CustomerList } from './CustomerList';
 import { ProductList } from './ProductList';
 import { OrderList } from './OrderList';
@@ -19,6 +20,21 @@ interface DashboardStats {
   totalOrders: number;
   pendingOrders: number;
   cancelledOrders: number;
+}
+
+interface InvoiceSettings {
+  id: string;
+  company_name: string;
+  phone_number: string;
+  facebook_account: string;
+  instagram_account: string;
+  snapchat_account: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
 }
 
 export function OrderDashboard() {
@@ -34,6 +50,7 @@ export function OrderDashboard() {
   const [startingOrderNumber, setStartingOrderNumber] = useState(() => {
     return parseInt(localStorage.getItem('starting-order-number') || '1');
   });
+  const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings | null>(null);
   const { toast } = useToast();
 
   const fetchStats = async () => {
@@ -59,8 +76,33 @@ export function OrderDashboard() {
     }
   };
 
+  const fetchInvoiceSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('invoice_settings')
+        .select('*')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (data) {
+        setInvoiceSettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching invoice settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load invoice settings",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchStats();
+    fetchInvoiceSettings();
   }, []);
 
   const handleCurrencyChange = (newCurrency: string) => {
@@ -98,6 +140,33 @@ export function OrderDashboard() {
       toast({
         title: "Error",
         description: "Failed to update starting order number",
+         variant: "destructive",
+       });
+     }
+   };
+
+  const handleInvoiceSettingsUpdate = async (updatedSettings: Partial<InvoiceSettings>) => {
+    if (!invoiceSettings) return;
+
+    try {
+      const { error } = await supabase
+        .from('invoice_settings')
+        .update(updatedSettings)
+        .eq('id', invoiceSettings.id);
+
+      if (error) throw error;
+
+      setInvoiceSettings({ ...invoiceSettings, ...updatedSettings });
+      
+      toast({
+        title: "Success",
+        description: "Invoice settings updated successfully",
+      });
+    } catch (error: any) {
+      console.error('Error updating invoice settings:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update invoice settings",
         variant: "destructive",
       });
     }
@@ -390,6 +459,152 @@ export function OrderDashboard() {
                   Set the starting number for your order sequence. The next order will start from this number.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Invoice Settings
+              </CardTitle>
+              <CardDescription>Configure company details that appear on invoices</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {invoiceSettings && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="company-name">Company Name</Label>
+                      <Input
+                        id="company-name"
+                        value={invoiceSettings.company_name}
+                        onChange={(e) => setInvoiceSettings({...invoiceSettings, company_name: e.target.value})}
+                        placeholder="Your Company Name"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phone-number">Phone Number</Label>
+                      <Input
+                        id="phone-number"
+                        value={invoiceSettings.phone_number || ''}
+                        onChange={(e) => setInvoiceSettings({...invoiceSettings, phone_number: e.target.value})}
+                        placeholder="974 55110219"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="facebook">Facebook Account</Label>
+                      <Input
+                        id="facebook"
+                        value={invoiceSettings.facebook_account || ''}
+                        onChange={(e) => setInvoiceSettings({...invoiceSettings, facebook_account: e.target.value})}
+                        placeholder="@your_facebook"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram">Instagram Account</Label>
+                      <Input
+                        id="instagram"
+                        value={invoiceSettings.instagram_account || ''}
+                        onChange={(e) => setInvoiceSettings({...invoiceSettings, instagram_account: e.target.value})}
+                        placeholder="@your_instagram"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="snapchat">Snapchat Account</Label>
+                      <Input
+                        id="snapchat"
+                        value={invoiceSettings.snapchat_account || ''}
+                        onChange={(e) => setInvoiceSettings({...invoiceSettings, snapchat_account: e.target.value})}
+                        placeholder="@your_snapchat"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Business Address</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="address-line1">Address Line 1</Label>
+                        <Input
+                          id="address-line1"
+                          value={invoiceSettings.address_line1 || ''}
+                          onChange={(e) => setInvoiceSettings({...invoiceSettings, address_line1: e.target.value})}
+                          placeholder="Street address"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="address-line2">Address Line 2</Label>
+                        <Input
+                          id="address-line2"
+                          value={invoiceSettings.address_line2 || ''}
+                          onChange={(e) => setInvoiceSettings({...invoiceSettings, address_line2: e.target.value})}
+                          placeholder="Apartment, suite, etc. (optional)"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={invoiceSettings.city || ''}
+                          onChange={(e) => setInvoiceSettings({...invoiceSettings, city: e.target.value})}
+                          placeholder="Doha"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="state">State/Province</Label>
+                        <Input
+                          id="state"
+                          value={invoiceSettings.state || ''}
+                          onChange={(e) => setInvoiceSettings({...invoiceSettings, state: e.target.value})}
+                          placeholder="State"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="postal-code">Postal Code</Label>
+                        <Input
+                          id="postal-code"
+                          value={invoiceSettings.postal_code || ''}
+                          onChange={(e) => setInvoiceSettings({...invoiceSettings, postal_code: e.target.value})}
+                          placeholder="12345"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Country</Label>
+                        <Input
+                          id="country"
+                          value={invoiceSettings.country || ''}
+                          onChange={(e) => setInvoiceSettings({...invoiceSettings, country: e.target.value})}
+                          placeholder="Qatar"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={() => handleInvoiceSettingsUpdate(invoiceSettings)}
+                      className="gap-2"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Save Invoice Settings
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

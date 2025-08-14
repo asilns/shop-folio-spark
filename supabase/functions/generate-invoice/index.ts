@@ -36,6 +36,20 @@ interface OrderItem {
   };
 }
 
+interface InvoiceSettings {
+  company_name: string;
+  phone_number: string;
+  facebook_account: string;
+  instagram_account: string;
+  snapchat_account: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -50,6 +64,17 @@ serve(async (req) => {
 
     const { orderId } = await req.json()
     console.log('Generating invoice for order:', orderId)
+
+    // Fetch invoice settings
+    const { data: settingsData, error: settingsError } = await supabase
+      .from('invoice_settings')
+      .select('*')
+      .single()
+
+    if (settingsError) {
+      console.error('Error fetching invoice settings:', settingsError)
+      throw settingsError
+    }
 
     // Fetch order details
     const { data: orderData, error: orderError } = await supabase
@@ -96,9 +121,10 @@ serve(async (req) => {
 
     const order = orderData as OrderData
     const items = orderItems as OrderItem[]
+    const settings = settingsData as InvoiceSettings
 
     // Generate HTML for the invoice
-    const invoiceHtml = generateInvoiceHtml(order, items)
+    const invoiceHtml = generateInvoiceHtml(order, items, settings)
     
     // For now, return the HTML which can be converted to PDF on the client side
     return new Response(invoiceHtml, {
@@ -120,10 +146,37 @@ serve(async (req) => {
   }
 })
 
-function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
+function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: InvoiceSettings): string {
   const subtotal = items.reduce((sum, item) => sum + item.total_price, 0)
   const discount = 0
   const total = subtotal - discount
+
+  // Build company contact info
+  const contactInfo = [];
+  if (settings.phone_number) {
+    contactInfo.push(`📞 ${settings.phone_number}`);
+  }
+  if (settings.facebook_account) {
+    contactInfo.push(`📘 ${settings.facebook_account}`);
+  }
+  if (settings.instagram_account) {
+    contactInfo.push(`📷 ${settings.instagram_account}`);
+  }
+  if (settings.snapchat_account) {
+    contactInfo.push(`👻 ${settings.snapchat_account}`);
+  }
+
+  // Build company address
+  const addressParts = [];
+  if (settings.address_line1) addressParts.push(settings.address_line1);
+  if (settings.address_line2) addressParts.push(settings.address_line2);
+  if (settings.city || settings.state || settings.postal_code) {
+    const cityStateZip = [settings.city, settings.state, settings.postal_code].filter(Boolean).join(', ');
+    if (cityStateZip) addressParts.push(cityStateZip);
+  }
+  if (settings.country) addressParts.push(settings.country);
+
+  const companyAddress = addressParts.length > 0 ? addressParts.join('<br>') : settings.city + ' - ' + settings.country;
 
   return `
     <!DOCTYPE html>
@@ -335,15 +388,8 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
         <!-- Header -->
         <div class="header">
           <div class="company-info">
-            <div class="contact-item">
-              <span>📞 974 55110219</span>
-            </div>
-            <div class="contact-item">
-              <span>📧 the.rainboo</span>
-            </div>
-            <div class="contact-item">
-              <span>📍 Doha - Qatar</span>
-            </div>
+            ${contactInfo.map(info => `<div class="contact-item"><span>${info}</span></div>`).join('')}
+            ${companyAddress ? `<div class="contact-item"><span>📍 ${companyAddress}</span></div>` : ''}
           </div>
         </div>
 
