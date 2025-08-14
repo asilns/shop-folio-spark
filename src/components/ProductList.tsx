@@ -547,7 +547,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="price">Price ($)</Label>
+                      <Label htmlFor="price">Price</Label>
                       <Input
                         id="price"
                         type="number"
@@ -646,7 +646,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="edit-price">Price ($)</Label>
+                  <Label htmlFor="edit-price">Price</Label>
                   <Input
                     id="edit-price"
                     type="number"
@@ -736,7 +736,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="bulk-price">Price ($)</Label>
+                          <Label htmlFor="bulk-price">Price</Label>
                           <Input
                             id="bulk-price"
                             type="number"
@@ -871,10 +871,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="w-3 h-3" />
-                    {product.price.toFixed(2)}
-                  </div>
+                  {product.price.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
