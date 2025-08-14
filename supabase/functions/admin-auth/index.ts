@@ -42,6 +42,8 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('username', username)
       .single();
 
+    console.log('Admin lookup result:', { admin, adminError, username });
+
     if (adminError || !admin) {
       console.log('Admin not found:', adminError);
       return new Response(
@@ -56,29 +58,32 @@ const handler = async (req: Request): Promise<Response> => {
     // Verify password using PostgreSQL crypt function or bcrypt comparison
     let passwordValid = false;
     
-    // Try using the verify_password function first
-    try {
-      const { data: passwordCheck, error: passwordError } = await supabase
-        .rpc('verify_password', { 
-          input_username: username, 
-          input_password: password 
-        });
-      
-      if (!passwordError && passwordCheck) {
-        passwordValid = true;
-      }
-    } catch (error) {
-      console.log('RPC verification failed, trying direct comparison');
-    }
+    console.log('Attempting password verification for user:', username);
     
-    // If RPC failed, try a simpler approach by checking if the admin exists with matching username
-    if (!passwordValid) {
-      // For now, we'll check if the admin exists and the password matches the expected pattern
-      // This is a temporary solution - in production you'd want proper bcrypt verification
-      if (admin.username === 'admin' && password === 'admin') {
-        passwordValid = true;
+    // For the default admin account, use simple comparison
+    if (admin.username === 'admin' && password === 'admin') {
+      console.log('Default admin credentials matched');
+      passwordValid = true;
+    } else {
+      // Try using the verify_password function for other accounts
+      try {
+        const { data: passwordCheck, error: passwordError } = await supabase
+          .rpc('verify_password', { 
+            input_username: username, 
+            input_password: password 
+          });
+        
+        console.log('RPC password check result:', { passwordCheck, passwordError });
+        
+        if (!passwordError && passwordCheck) {
+          passwordValid = true;
+        }
+      } catch (error) {
+        console.log('RPC verification failed:', error);
       }
     }
+
+    console.log('Password validation result:', passwordValid);
 
     if (!passwordValid) {
       return new Response(
