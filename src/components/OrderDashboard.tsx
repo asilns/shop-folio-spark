@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, ShoppingCart, ClipboardList, XCircle, Settings, FileText } from 'lucide-react';
+import { PlusCircle, ShoppingCart, ClipboardList, XCircle, Settings, FileText, LogOut, Shield } from 'lucide-react';
 import { CustomerList } from './CustomerList';
 import { ProductList } from './ProductList';
 import { OrderList } from './OrderList';
@@ -18,6 +19,7 @@ import { ThemeToggle } from './theme-toggle';
 import { OrderStatusSettings } from './OrderStatusSettings';
 import { LanguageSelector } from './LanguageSelector';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
   totalOrders: number;
@@ -41,6 +43,8 @@ interface InvoiceSettings {
 
 export function OrderDashboard() {
   const { t } = useLanguage();
+  const { profile, signOut, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -56,6 +60,15 @@ export function OrderDashboard() {
   const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -304,11 +317,31 @@ export function OrderDashboard() {
           <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
           <p className="text-muted-foreground">{t('viewAndManageOrders')}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-4">
+            <span className="text-sm text-muted-foreground">
+              {t('welcomeBack')}, {profile?.username}
+            </span>
+            {isAdmin && (
+              <Badge variant="secondary" className="text-xs">
+                {t('admin')}
+              </Badge>
+            )}
+          </div>
           <ThemeToggle />
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate('/admin')} className="gap-2">
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('adminPanel')}</span>
+            </Button>
+          )}
           <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t('createOrder')}</span>
+          </Button>
+          <Button variant="outline" onClick={handleSignOut} className="gap-2">
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('logout')}</span>
           </Button>
         </div>
       </div>

@@ -72,6 +72,16 @@ const translations = {
     'browse': 'Browse',
     'choose': 'Choose',
     
+    // Authentication
+    'welcomeBack': 'Welcome back',
+    'admin': 'Admin',
+    'adminPanel': 'Admin Panel',
+    'logout': 'Logout',
+    'login': 'Login',
+    'loginSuccess': 'Login successful',
+    'loginFailed': 'Login failed',
+    'invalidCredentials': 'Invalid username or password',
+    
     // Form Labels
     'name': 'Name',
     'customerName': 'Customer Name',
@@ -251,6 +261,16 @@ const translations = {
     'upload': 'رفع',
     'browse': 'تصفح',
     'choose': 'اختيار',
+    
+    // Authentication
+    'welcomeBack': 'مرحباً بعودتك',
+    'admin': 'مشرف',
+    'adminPanel': 'لوحة الإدارة',
+    'logout': 'تسجيل الخروج',
+    'login': 'تسجيل الدخول',
+    'loginSuccess': 'تم تسجيل الدخول بنجاح',
+    'loginFailed': 'فشل تسجيل الدخول',
+    'invalidCredentials': 'اسم المستخدم أو كلمة المرور غير صحيحة',
     
     // Form Labels
     'name': 'الاسم',
