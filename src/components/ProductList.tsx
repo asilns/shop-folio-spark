@@ -27,17 +27,26 @@ interface Product {
   created_at: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 interface ProductListProps {
   onDataChange?: () => void;
 }
 
 export function ProductList({ onDataChange }: ProductListProps) {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
+  const [newCategory, setNewCategory] = useState({ name: '', description: '' });
   const [bulkEditData, setBulkEditData] = useState({
     price: '',
     stock_quantity: '',
@@ -76,6 +85,20 @@ export function ProductList({ onDataChange }: ProductListProps) {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -111,12 +134,43 @@ export function ProductList({ onDataChange }: ProductListProps) {
       });
       setShowDialog(false);
       fetchProducts();
+      fetchCategories();
       onDataChange?.();
     } catch (error: any) {
       console.error('Error creating product:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create product",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .insert([{
+          name: newCategory.name,
+          description: newCategory.description || null
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Category created successfully",
+      });
+
+      setNewCategory({ name: '', description: '' });
+      setShowCategoryDialog(false);
+      fetchCategories();
+    } catch (error: any) {
+      console.error('Error creating category:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create category",
         variant: "destructive",
       });
     }
@@ -207,7 +261,9 @@ export function ProductList({ onDataChange }: ProductListProps) {
       // Only include fields that have values
       if (bulkEditData.price) updateData.price = parseFloat(bulkEditData.price);
       if (bulkEditData.stock_quantity) updateData.stock_quantity = parseInt(bulkEditData.stock_quantity);
-      if (bulkEditData.category) updateData.category = bulkEditData.category;
+      if (bulkEditData.category) {
+        updateData.category = bulkEditData.category === 'null' ? null : bulkEditData.category;
+      }
       if (bulkEditData.is_active !== '') updateData.is_active = bulkEditData.is_active === 'true';
 
       if (Object.keys(updateData).length === 0) {
@@ -254,6 +310,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   if (loading) {
@@ -266,9 +323,51 @@ export function ProductList({ onDataChange }: ProductListProps) {
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Products</CardTitle>
-            <CardDescription>Manage your product catalog</CardDescription>
+            <CardDescription>Manage your product catalog and categories</CardDescription>
           </div>
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <div className="flex gap-2">
+            <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <PlusCircle className="w-4 h-4" />
+                  Add Category
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <form onSubmit={handleCreateCategory}>
+                  <DialogHeader>
+                    <DialogTitle>Add New Category</DialogTitle>
+                    <DialogDescription>
+                      Create a new product category.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div>
+                      <Label htmlFor="category-name">Category Name</Label>
+                      <Input
+                        id="category-name"
+                        value={newCategory.name}
+                        onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="category-description">Description</Label>
+                      <Textarea
+                        id="category-description"
+                        value={newCategory.description}
+                        onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit">Create Category</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <PlusCircle className="w-4 h-4" />
@@ -336,11 +435,19 @@ export function ProductList({ onDataChange }: ProductListProps) {
                     </div>
                     <div>
                       <Label htmlFor="category">Category</Label>
-                      <Input
-                        id="category"
-                        value={formData.category}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      />
+                      <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">No category</SelectItem>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -357,7 +464,8 @@ export function ProductList({ onDataChange }: ProductListProps) {
                 </DialogFooter>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -408,12 +516,20 @@ export function ProductList({ onDataChange }: ProductListProps) {
                       </div>
                       <div>
                         <Label htmlFor="bulk-category">Category</Label>
-                        <Input
-                          id="bulk-category"
-                          value={bulkEditData.category}
-                          onChange={(e) => setBulkEditData({...bulkEditData, category: e.target.value})}
-                          placeholder="Leave empty to keep current"
-                        />
+                        <Select value={bulkEditData.category} onValueChange={(value) => setBulkEditData({...bulkEditData, category: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Leave unchanged" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Leave unchanged</SelectItem>
+                            <SelectItem value="null">No category</SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem key={category.id} value={category.name}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor="bulk-status">Status</Label>
