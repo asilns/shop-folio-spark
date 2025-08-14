@@ -119,7 +119,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
         price: parseFloat(formData.price),
         sku: formData.sku || null,
         stock_quantity: parseInt(formData.stock_quantity),
-        category: formData.category || null,
+        category: formData.category === 'none' ? null : formData.category || null,
         is_active: formData.is_active,
       };
 
@@ -272,10 +272,10 @@ export function ProductList({ onDataChange }: ProductListProps) {
       // Only include fields that have values
       if (bulkEditData.price) updateData.price = parseFloat(bulkEditData.price);
       if (bulkEditData.stock_quantity) updateData.stock_quantity = parseInt(bulkEditData.stock_quantity);
-      if (bulkEditData.category) {
+      if (bulkEditData.category && bulkEditData.category !== 'unchanged') {
         updateData.category = bulkEditData.category === 'null' ? null : bulkEditData.category;
       }
-      if (bulkEditData.is_active !== '') updateData.is_active = bulkEditData.is_active === 'true';
+      if (bulkEditData.is_active !== '' && bulkEditData.is_active !== 'unchanged') updateData.is_active = bulkEditData.is_active === 'true';
 
       if (Object.keys(updateData).length === 0) {
         toast({
@@ -327,7 +327,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
       price: product.price.toString(),
       sku: product.sku || '',
       stock_quantity: product.stock_quantity.toString(),
-      category: product.category || '',
+      category: product.category || 'none',
       is_active: product.is_active,
     });
     setShowEditDialog(true);
@@ -344,7 +344,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
         price: parseFloat(editFormData.price),
         sku: editFormData.sku || null,
         stock_quantity: parseInt(editFormData.stock_quantity),
-        category: editFormData.category || null,
+        category: editFormData.category === 'none' ? null : editFormData.category || null,
         is_active: editFormData.is_active,
       };
 
@@ -506,7 +506,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">No category</SelectItem>
+                          <SelectItem value="none">No category</SelectItem>
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.name}>
                               {category.name}
@@ -603,7 +603,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No category</SelectItem>
+                      <SelectItem value="none">No category</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.name}>
                           {category.name}
@@ -684,7 +684,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                             <SelectValue placeholder="Leave unchanged" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Leave unchanged</SelectItem>
+                            <SelectItem value="unchanged">Leave unchanged</SelectItem>
                             <SelectItem value="null">No category</SelectItem>
                             {categories.map((category) => (
                               <SelectItem key={category.id} value={category.name}>
@@ -701,7 +701,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                             <SelectValue placeholder="Leave unchanged" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Leave unchanged</SelectItem>
+                            <SelectItem value="unchanged">Leave unchanged</SelectItem>
                             <SelectItem value="true">Active</SelectItem>
                             <SelectItem value="false">Inactive</SelectItem>
                           </SelectContent>
