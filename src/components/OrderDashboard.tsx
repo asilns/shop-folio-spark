@@ -301,14 +301,14 @@ export function OrderDashboard() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Order Management Dashboard</h1>
-          <p className="text-muted-foreground">Manage your customers, products, and orders</p>
+          <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
+          <p className="text-muted-foreground">{t('viewAndManageOrders')}</p>
         </div>
         <div className="flex gap-2">
           <ThemeToggle />
           <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
             <PlusCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Create Order</span>
+            <span className="hidden sm:inline">{t('createOrder')}</span>
           </Button>
         </div>
       </div>
@@ -317,7 +317,7 @@ export function OrderDashboard() {
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('totalOrders')}</CardTitle>
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -327,7 +327,7 @@ export function OrderDashboard() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('pendingOrders')}</CardTitle>
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -337,7 +337,7 @@ export function OrderDashboard() {
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cancelled Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('cancelled')}</CardTitle>
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -349,10 +349,10 @@ export function OrderDashboard() {
       {/* Main Content Tabs */}
       <Tabs defaultValue="orders" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="customers">Customers</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="orders">{t('orders')}</TabsTrigger>
+          <TabsTrigger value="customers">{t('customers')}</TabsTrigger>
+          <TabsTrigger value="products">{t('products')}</TabsTrigger>
+          <TabsTrigger value="settings">{t('settings')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="orders" className="space-y-4">
@@ -374,14 +374,14 @@ export function OrderDashboard() {
                 <Settings className="w-5 h-5" />
                 {t('applicationSettings')}
               </CardTitle>
-              <CardDescription>Configure your application preferences</CardDescription>
+              <CardDescription>{t('configurePreferences')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Language Selection */}
               <LanguageSelector />
               
               <div className="space-y-2">
-                <Label htmlFor="currency">Default Currency</Label>
+                <Label htmlFor="currency">{t('defaultCurrency')}</Label>
                 <Select value={currency} onValueChange={handleCurrencyChange}>
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder="Select currency" />

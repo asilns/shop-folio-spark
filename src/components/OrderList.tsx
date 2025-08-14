@@ -613,7 +613,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>{t('orders')}</CardTitle>
-              <CardDescription>View and manage customer orders</CardDescription>
+              <CardDescription>{t('viewAndManageOrders')}</CardDescription>
             </div>
             <Button
               variant="outline"
