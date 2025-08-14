@@ -14,6 +14,7 @@ import { ProductList } from './ProductList';
 import { OrderList } from './OrderList';
 import { CreateOrderDialog } from './CreateOrderDialog';
 import { ThemeToggle } from './theme-toggle';
+import { OrderStatusSettings } from './OrderStatusSettings';
 import { useToast } from '@/hooks/use-toast';
 
 interface DashboardStats {
@@ -751,6 +752,9 @@ export function OrderDashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* Order Status Settings */}
+          <OrderStatusSettings onStatusChange={fetchStats} />
         </TabsContent>
       </Tabs>
 

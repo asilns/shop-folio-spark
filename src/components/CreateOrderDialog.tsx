@@ -50,6 +50,7 @@ interface CreateOrderDialogProps {
 export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultCurrency = 'USD' }: CreateOrderDialogProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [orderStatuses, setOrderStatuses] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [discount, setDiscount] = useState<number>(0);
@@ -91,6 +92,21 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
+    }
+  };
+
+  const fetchOrderStatuses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('order_statuses')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+      setOrderStatuses(data || []);
+    } catch (error) {
+      console.error('Error fetching order statuses:', error);
     }
   };
 
@@ -200,7 +216,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
           total_amount: totalAmount,
           discount: discount,
           currency: defaultCurrency,
-          status: 'pending',
+          status: orderStatuses[0]?.name || 'pending',
           notes: notes || null,
           order_number: '' // This will be replaced by trigger
         })
@@ -261,6 +277,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
     if (open) {
       fetchCustomers();
       fetchProducts();
+      fetchOrderStatuses();
     }
   }, [open]);
 

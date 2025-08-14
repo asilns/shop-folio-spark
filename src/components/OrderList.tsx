@@ -51,14 +51,14 @@ interface OrderListProps {
   onDataChange?: () => void;
 }
 
-const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  processing: 'bg-purple-100 text-purple-800',
-  shipped: 'bg-green-100 text-green-800',
-  delivered: 'bg-emerald-100 text-emerald-800',
-  cancelled: 'bg-red-100 text-red-800',
-};
+interface OrderStatus {
+  id: string;
+  name: string;
+  display_name: string;
+  color: string;
+  sort_order: number;
+  is_active: boolean;
+}
 
 export function OrderList({ onDataChange }: OrderListProps) {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -79,7 +79,41 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [editOrderData, setEditOrderData] = useState<any>({});
   const [editOrderItems, setEditOrderItems] = useState<any[]>([]);
+  const [orderStatuses, setOrderStatuses] = useState<OrderStatus[]>([]);
+  const [statusColors, setStatusColors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+
+  const fetchOrderStatuses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('order_statuses')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+      
+      setOrderStatuses(data || []);
+      
+      // Create status colors map
+      const colorsMap: Record<string, string> = {};
+      data?.forEach(status => {
+        colorsMap[status.name] = status.color;
+      });
+      setStatusColors(colorsMap);
+    } catch (error) {
+      console.error('Error fetching order statuses:', error);
+      // Fallback to default statuses if fetch fails
+      setStatusColors({
+        pending: 'bg-yellow-100 text-yellow-800',
+        confirmed: 'bg-blue-100 text-blue-800',
+        processing: 'bg-purple-100 text-purple-800',
+        shipped: 'bg-green-100 text-green-800',
+        delivered: 'bg-emerald-100 text-emerald-800',
+        cancelled: 'bg-red-100 text-red-800',
+      });
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -526,7 +560,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrderStatuses().then(() => fetchOrders());
   }, [statusFilter, dateFromFilter, dateToFilter]);
 
   // Initialize edit order items when orderItems change or edit mode is enabled
@@ -619,15 +653,14 @@ export function OrderList({ onDataChange }: OrderListProps) {
                     <SelectTrigger>
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All statuses</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="shipped">Shipped</SelectItem>
-                      <SelectItem value="delivered">Delivered</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
+                     <SelectContent>
+                       <SelectItem value="all">All statuses</SelectItem>
+                       {orderStatuses.map((status) => (
+                         <SelectItem key={status.id} value={status.name}>
+                           {status.display_name}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
                   </Select>
                 </div>
                 
@@ -741,14 +774,13 @@ export function OrderList({ onDataChange }: OrderListProps) {
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Update Status" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Mark as Pending</SelectItem>
-                      <SelectItem value="confirmed">Mark as Confirmed</SelectItem>
-                      <SelectItem value="processing">Mark as Processing</SelectItem>
-                      <SelectItem value="shipped">Mark as Shipped</SelectItem>
-                      <SelectItem value="delivered">Mark as Delivered</SelectItem>
-                      <SelectItem value="cancelled">Mark as Cancelled</SelectItem>
-                    </SelectContent>
+                     <SelectContent>
+                       {orderStatuses.map((status) => (
+                         <SelectItem key={status.id} value={status.name}>
+                           Mark as {status.display_name}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
                   </Select>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -853,21 +885,20 @@ export function OrderList({ onDataChange }: OrderListProps) {
                        value={order.status}
                        onValueChange={(value) => updateOrderStatus(order.id, value)}
                      >
-                      <SelectTrigger className="w-32" onClick={(e) => e.stopPropagation()}>
-                        <SelectValue>
-                          <Badge className={statusColors[order.status as keyof typeof statusColors]}>
-                            {order.status}
-                          </Badge>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
+                       <SelectTrigger className="w-32" onClick={(e) => e.stopPropagation()}>
+                         <SelectValue>
+                           <Badge className={statusColors[order.status]}>
+                             {orderStatuses.find(s => s.name === order.status)?.display_name || order.status}
+                           </Badge>
+                         </SelectValue>
+                       </SelectTrigger>
+                       <SelectContent>
+                         {orderStatuses.map((status) => (
+                           <SelectItem key={status.id} value={status.name}>
+                             {status.display_name}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
                     </Select>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -1184,7 +1215,9 @@ export function OrderList({ onDataChange }: OrderListProps) {
                           <span>{selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</span>
                         </div>
                         <div className="text-muted-foreground mt-2">
-                          Status: <Badge className={statusColors[selectedOrder.status as keyof typeof statusColors]}>{selectedOrder.status}</Badge>
+                           Status: <Badge className={statusColors[selectedOrder.status]}>
+                             {orderStatuses.find(s => s.name === selectedOrder.status)?.display_name || selectedOrder.status}
+                           </Badge>
                         </div>
                         <div className="text-muted-foreground">
                           Date: {new Date(selectedOrder.created_at).toLocaleDateString()}
