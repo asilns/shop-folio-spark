@@ -479,17 +479,17 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                     <Label htmlFor="discount">Discount:</Label>
                     <div className="flex items-center gap-2">
                       <span></span>
-                      <Input
-                        id="discount"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max={calculateSubtotal()}
-                        value={discount}
-                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                        className="w-24"
-                        placeholder="0.00"
-                      />
+                       <Input
+                         id="discount"
+                         type="number"
+                         step="1"
+                         min="0"
+                         max={calculateSubtotal()}
+                         value={discount}
+                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                         className="w-24"
+                         placeholder="0"
+                       />
                     </div>
                   </div>
                   
