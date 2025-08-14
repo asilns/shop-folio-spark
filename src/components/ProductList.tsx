@@ -255,10 +255,36 @@ export function ProductList({ onDataChange }: ProductListProps) {
 
   const confirmDeleteProduct = async () => {
     if (!productToDelete) return;
-    await deleteProduct(productToDelete.id, productToDelete.name);
+    await deactivateProduct(productToDelete.id, productToDelete.name);
     setShowDeleteWarningDialog(false);
     setProductToDelete(null);
     setDeleteWarningInfo(null);
+  };
+
+  const deactivateProduct = async (productId: string, productName: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ is_active: false })
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Product "${productName}" has been deactivated`,
+      });
+
+      fetchProducts();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error deactivating product:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to deactivate product",
+        variant: "destructive",
+      });
+    }
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
@@ -930,9 +956,9 @@ export function ProductList({ onDataChange }: ProductListProps) {
                 <br />
                 • {deleteWarningInfo?.orderItemCount} order items across {deleteWarningInfo?.orderCount} orders reference this product
                 <br /><br />
-                If you proceed, <strong>all related order items will also be deleted</strong>. This action cannot be undone.
+                To preserve order history and data integrity, the product will be <strong>deactivated</strong> instead of deleted.
                 <br /><br />
-                Consider deactivating the product instead of deleting it to preserve order history.
+                Deactivated products will no longer appear in new orders but existing order history will be preserved.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -945,9 +971,9 @@ export function ProductList({ onDataChange }: ProductListProps) {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmDeleteProduct}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-orange-600 hover:bg-orange-700"
               >
-                Delete Anyway
+                Deactivate Product
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
