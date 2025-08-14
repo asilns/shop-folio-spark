@@ -45,8 +45,6 @@ interface InvoiceSettings {
   address_line1: string;
   address_line2: string;
   city: string;
-  state: string;
-  postal_code: string;
   country: string;
 }
 
@@ -170,10 +168,7 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
   const addressParts = [];
   if (settings.address_line1) addressParts.push(settings.address_line1);
   if (settings.address_line2) addressParts.push(settings.address_line2);
-  if (settings.city || settings.state || settings.postal_code) {
-    const cityStateZip = [settings.city, settings.state, settings.postal_code].filter(Boolean).join(', ');
-    if (cityStateZip) addressParts.push(cityStateZip);
-  }
+  if (settings.city) addressParts.push(settings.city);
   if (settings.country) addressParts.push(settings.country);
 
   const companyAddress = addressParts.length > 0 ? addressParts.join('<br>') : settings.city + ' - ' + settings.country;
@@ -415,13 +410,12 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
             <p class="customer-name">${order.customers.first_name} ${order.customers.last_name}</p>
             
             <h4>Address</h4>
-            <p class="address">
-              ${order.customers.address_line1 || 'Ask for location'}<br>
-              ${order.customers.address_line2 ? order.customers.address_line2 + '<br>' : ''}
-              ${order.customers.city ? order.customers.city + ', ' : ''}
-              ${order.customers.state || ''} ${order.customers.postal_code || ''}<br>
-              ${order.customers.country || ''}
-            </p>
+             <p class="address">
+               ${order.customers.address_line1 || 'Ask for location'}<br>
+               ${order.customers.address_line2 ? order.customers.address_line2 + '<br>' : ''}
+               ${order.customers.city || ''}<br>
+               ${order.customers.country || ''}
+             </p>
           </div>
           
           <div class="contact-info">

@@ -32,8 +32,6 @@ interface InvoiceSettings {
   address_line1: string;
   address_line2: string;
   city: string;
-  state: string;
-  postal_code: string;
   country: string;
 }
 
@@ -551,7 +549,7 @@ export function OrderDashboard() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="city">City</Label>
                         <Input
@@ -559,26 +557,6 @@ export function OrderDashboard() {
                           value={invoiceSettings.city || ''}
                           onChange={(e) => setInvoiceSettings({...invoiceSettings, city: e.target.value})}
                           placeholder="Doha"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="state">State/Province</Label>
-                        <Input
-                          id="state"
-                          value={invoiceSettings.state || ''}
-                          onChange={(e) => setInvoiceSettings({...invoiceSettings, state: e.target.value})}
-                          placeholder="State"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="postal-code">Postal Code</Label>
-                        <Input
-                          id="postal-code"
-                          value={invoiceSettings.postal_code || ''}
-                          onChange={(e) => setInvoiceSettings({...invoiceSettings, postal_code: e.target.value})}
-                          placeholder="12345"
                         />
                       </div>
                       

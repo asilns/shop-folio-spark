@@ -74,9 +74,7 @@ export type Database = {
           id: string
           instagram_account: string | null
           phone_number: string | null
-          postal_code: string | null
           snapchat_account: string | null
-          state: string | null
           updated_at: string
         }
         Insert: {
@@ -90,9 +88,7 @@ export type Database = {
           id?: string
           instagram_account?: string | null
           phone_number?: string | null
-          postal_code?: string | null
           snapchat_account?: string | null
-          state?: string | null
           updated_at?: string
         }
         Update: {
@@ -106,9 +102,7 @@ export type Database = {
           id?: string
           instagram_account?: string | null
           phone_number?: string | null
-          postal_code?: string | null
           snapchat_account?: string | null
-          state?: string | null
           updated_at?: string
         }
         Relationships: []
