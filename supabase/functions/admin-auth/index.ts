@@ -35,17 +35,17 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Query the admins table to find the user
-    const { data: admin, error: adminError } = await supabase
-      .from('admins')
-      .select('id, username, password_hash, role, email')
-      .eq('username', username)
-      .single();
+    // Use the secure authentication function
+    const { data: authResult, error: authError } = await supabase
+      .rpc('authenticate_admin', {
+        input_username: username,
+        input_password: password
+      });
 
-    console.log('Admin lookup result:', { admin, adminError, username });
+    console.log('Authentication result:', { authResult, authError });
 
-    if (adminError || !admin) {
-      console.log('Admin not found:', adminError);
+    if (authError || !authResult || authResult.length === 0) {
+      console.log('Authentication failed:', authError);
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid credentials' }),
         { 
@@ -55,57 +55,20 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Verify password using PostgreSQL crypt function or bcrypt comparison
-    let passwordValid = false;
-    
-    console.log('Attempting password verification for user:', username);
-    
-    // For the default admin account, use simple comparison
-    if (admin.username === 'admin' && password === 'admin') {
-      console.log('Default admin credentials matched');
-      passwordValid = true;
-    } else {
-      // Try using the verify_password function for other accounts
-      try {
-        const { data: passwordCheck, error: passwordError } = await supabase
-          .rpc('verify_password', { 
-            input_username: username, 
-            input_password: password 
-          });
-        
-        console.log('RPC password check result:', { passwordCheck, passwordError });
-        
-        if (!passwordError && passwordCheck) {
-          passwordValid = true;
-        }
-      } catch (error) {
-        console.log('RPC verification failed:', error);
-      }
-    }
-
-    console.log('Password validation result:', passwordValid);
-
-    if (!passwordValid) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid credentials' }),
-        { 
-          status: 401, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
-    }
+    const admin = authResult[0];
+    console.log('Admin authenticated:', admin.username, admin.role);
 
     // Create or get auth user for this admin
-    let authUserId = admin.id;
+    let authUserId = admin.admin_id;
     
     // Check if auth user exists
-    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(authUserId);
+    const { data: authUser, error: authUserError } = await supabase.auth.admin.getUserById(authUserId);
     
-    if (authError || !authUser.user) {
+    if (authUserError || !authUser.user) {
       // Create auth user if it doesn't exist
       const email = admin.email || `${username}@admin.local`;
       const { data: newAuthUser, error: createError } = await supabase.auth.admin.createUser({
-        id: admin.id,
+        id: admin.admin_id,
         email: email,
         password: password,
         email_confirm: true,

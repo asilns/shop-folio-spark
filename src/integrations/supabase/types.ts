@@ -516,6 +516,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      authenticate_admin: {
+        Args: { input_password: string; input_username: string }
+        Returns: {
+          admin_id: string
+          email: string
+          role: string
+          username: string
+        }[]
+      }
       generate_order_number: {
         Args: Record<PropertyKey, never>
         Returns: string
