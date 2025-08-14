@@ -123,8 +123,7 @@ serve(async (req) => {
 function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
   const subtotal = items.reduce((sum, item) => sum + item.total_price, 0)
   const discount = 0
-  const advancePay = 0
-  const remaining = subtotal - discount - advancePay
+  const total = subtotal - discount
 
   return `
     <!DOCTYPE html>
@@ -290,23 +289,25 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
 
         .totals {
           background: #f8f8f8;
-          padding: 20px;
+          padding: 24px;
           border-radius: 8px;
+          min-width: 280px;
         }
 
         .total-row {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 8px;
-          padding: 4px 0;
+          margin-bottom: 12px;
+          padding: 6px 0;
+          font-size: 15px;
         }
 
         .total-row.final {
           border-top: 2px solid #d4a574;
-          margin-top: 12px;
-          padding-top: 12px;
-          font-weight: 600;
-          font-size: 16px;
+          margin-top: 16px;
+          padding-top: 16px;
+          font-weight: 700;
+          font-size: 18px;
         }
 
         .total-row .label {
@@ -414,20 +415,16 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
           
           <div class="totals">
             <div class="total-row">
-              <span class="label">Total</span>
+              <span class="label">Subtotal</span>
               <span class="value">${order.currency}${subtotal.toFixed(2)}</span>
             </div>
             <div class="total-row">
               <span class="label">Discount</span>
               <span class="value">${order.currency}${discount.toFixed(2)}</span>
             </div>
-            <div class="total-row">
-              <span class="label">Advance Pay</span>
-              <span class="value">-${order.currency}${advancePay.toFixed(2)}</span>
-            </div>
             <div class="total-row final">
-              <span class="label">Remaining</span>
-              <span class="value">${order.currency}${remaining.toFixed(2)}</span>
+              <span class="label">Total</span>
+              <span class="value">${order.currency}${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
