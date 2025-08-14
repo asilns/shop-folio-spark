@@ -411,7 +411,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                         <SelectContent>
                           {products.map((product) => (
                             <SelectItem key={product.id} value={product.id}>
-                              {product.name} - ${product.price.toFixed(2)}
+                              {product.name} - {product.price.toFixed(2)}
                               {product.sku && ` (${product.sku})`}
                               <Badge variant="outline" className="ml-2">
                                 Stock: {product.stock_quantity}
@@ -446,7 +446,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                     <div className="w-28">
                       <Label>Total</Label>
                       <div className="h-10 flex items-center font-medium">
-                        ${(item.unit_price * item.quantity).toFixed(2)}
+                        {(item.unit_price * item.quantity).toFixed(2)}
                       </div>
                     </div>
                     
