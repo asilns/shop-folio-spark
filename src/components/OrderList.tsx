@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -24,6 +25,7 @@ interface Order {
   discount: number;
   currency: string;
   created_at: string;
+  notes?: string;
   customers: {
     id: string;
     first_name: string;
@@ -220,7 +222,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
     // Initialize edit data
     setEditOrderData({
       customer_id: order.customers.id || '',
-      discount: order.discount || 0
+      discount: order.discount || 0,
+      notes: order.notes || ''
     });
     
     setShowOrderDetails(true);
@@ -235,7 +238,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
         .from('orders')
         .update({
           customer_id: editOrderData.customer_id,
-          discount: editOrderData.discount || 0
+          discount: editOrderData.discount || 0,
+          notes: editOrderData.notes || null
         })
         .eq('id', selectedOrder.id);
 
@@ -1073,6 +1077,34 @@ export function OrderList({ onDataChange }: OrderListProps) {
                 </Table>
               </div>
 
+              {/* Notes Section */}
+              <div>
+                <h4 className="font-semibold mb-2">Order Notes</h4>
+                {isEditMode ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Notes</Label>
+                    <Textarea
+                      id="notes"
+                      value={editOrderData.notes}
+                      onChange={(e) => setEditOrderData({...editOrderData, notes: e.target.value})}
+                      placeholder="Add order notes, special instructions, or comments..."
+                      rows={3}
+                      className="resize-none"
+                    />
+                  </div>
+                ) : (
+                  <div className="text-sm">
+                    {selectedOrder.notes ? (
+                      <div className="p-3 bg-muted rounded-md">
+                        {selectedOrder.notes}
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground italic">No notes added</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Discount and Totals */}
               <div className="grid grid-cols-2 gap-6">
                 <div>
@@ -1173,7 +1205,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
                     // Reset edit data
                     setEditOrderData({
                       customer_id: selectedOrder?.customers.id || '',
-                      discount: selectedOrder?.discount || 0
+                      discount: selectedOrder?.discount || 0,
+                      notes: selectedOrder?.notes || ''
                     });
                     setEditOrderItems(orderItems.map(item => ({
                       ...item,
