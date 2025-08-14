@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -61,6 +62,7 @@ interface OrderStatus {
 }
 
 export function OrderList({ onDataChange }: OrderListProps) {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -610,7 +612,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Orders</CardTitle>
+              <CardTitle>{t('orders')}</CardTitle>
               <CardDescription>View and manage customer orders</CardDescription>
             </div>
             <Button
@@ -619,7 +621,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
               className="gap-2"
             >
               <Filter className="w-4 h-4" />
-              Filters
+              <span className="hidden sm:inline">{t('filters')}</span>
+              <span className="sm:hidden">{t('filters')}</span>
                {hasActiveFilters && (
                  <span className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
                    {(statusFilter && statusFilter !== 'all' ? 1 : 0) + (dateFromFilter ? 1 : 0) + (dateToFilter ? 1 : 0)}
@@ -784,10 +787,10 @@ export function OrderList({ onDataChange }: OrderListProps) {
                   </Select>
                    <AlertDialog>
                      <AlertDialogTrigger asChild>
-                       <Button variant="destructive" size="sm">
-                         <Trash2 className="w-4 h-4 md:mr-2" />
-                         <span className="hidden md:inline">Delete Selected</span>
-                       </Button>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="w-4 h-4 md:mr-2" />
+                          <span className="hidden md:inline">{t('deleteSelected')}</span>
+                        </Button>
                      </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -823,11 +826,11 @@ export function OrderList({ onDataChange }: OrderListProps) {
                   />
                 </TableHead>
                 <TableHead>Order #</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t('customerName')}</TableHead>
+                <TableHead>{t('total')}</TableHead>
+                <TableHead>{t('status')}</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

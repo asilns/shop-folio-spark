@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,7 @@ interface CreateOrderDialogProps {
 }
 
 export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultCurrency = 'USD' }: CreateOrderDialogProps) {
+  const { t } = useLanguage();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orderStatuses, setOrderStatuses] = useState<any[]>([]);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +40,7 @@ interface InvoiceSettings {
 }
 
 export function OrderDashboard() {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     pendingOrders: 0,
@@ -370,7 +372,7 @@ export function OrderDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />
-                Application Settings
+                {t('applicationSettings')}
               </CardTitle>
               <CardDescription>Configure your application preferences</CardDescription>
             </CardHeader>
@@ -592,7 +594,7 @@ export function OrderDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                Invoice Settings
+                {t('invoiceSettings')}
               </CardTitle>
               <CardDescription>Configure company details that appear on invoices</CardDescription>
             </CardHeader>
@@ -774,7 +776,7 @@ export function OrderDashboard() {
                       className="gap-2"
                     >
                       <Settings className="w-4 h-4" />
-                      Save Invoice Settings
+                      <span className="hidden sm:inline">{t('save')} {t('invoiceSettings')}</span>
                     </Button>
                   </div>
                 </>
