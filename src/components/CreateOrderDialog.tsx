@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Plus, UserPlus } from 'lucide-react';
@@ -52,6 +53,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [discount, setDiscount] = useState<number>(0);
+  const [notes, setNotes] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [newCustomer, setNewCustomer] = useState<NewCustomer>({
@@ -199,6 +201,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
           discount: discount,
           currency: defaultCurrency,
           status: 'pending',
+          notes: notes || null,
           order_number: '' // This will be replaced by trigger
         })
         .select()
@@ -230,6 +233,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
       setSelectedCustomer('');
       setOrderItems([]);
       setDiscount(0);
+      setNotes('');
       setShowNewCustomerForm(false);
       setNewCustomer({
         full_name: '',
@@ -477,6 +481,29 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Notes Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Order Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add any special instructions, notes, or comments for this order..."
+                  rows={3}
+                  className="resize-none"
+                />
+                <p className="text-sm text-muted-foreground">
+                  These notes will be visible in order details and can be included in communications.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
