@@ -188,49 +188,57 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
           box-sizing: border-box;
         }
 
+        @page {
+          size: A5;
+          margin: 8mm;
+        }
+
         body {
           font-family: Arial, sans-serif;
-          font-size: 14px;
-          line-height: 1.4;
+          font-size: 10px;
+          line-height: 1.3;
           color: #333;
           background: #fff;
-          padding: 40px 60px;
+          padding: 0;
           margin: 0;
+          width: 148mm;
+          min-height: 210mm;
         }
 
         .invoice-container {
-          max-width: 800px;
-          margin: 0 auto;
+          width: 100%;
+          margin: 0;
           background: #fff;
-          padding: 0 20px;
+          padding: 8mm;
         }
 
         .header {
-          margin-bottom: 30px;
+          margin-bottom: 15px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          gap: 20px;
+          gap: 10px;
         }
 
         .company-logo {
-          max-width: 120px;
-          max-height: 80px;
+          max-width: 60px;
+          max-height: 40px;
           object-fit: contain;
         }
 
         .company-info {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 3px;
           flex: 1;
+          font-size: 8px;
         }
 
         .contact-item {
           display: flex;
           align-items: center;
-          gap: 8px;
-          font-size: 14px;
+          gap: 4px;
+          font-size: 8px;
           color: #666;
         }
 
@@ -238,13 +246,13 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 40px;
-          padding-bottom: 20px;
-          border-bottom: 2px solid #f0f0f0;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #e0e0e0;
         }
 
         .invoice-title {
-          font-size: 48px;
+          font-size: 24px;
           color: #d4a574;
           font-weight: 300;
           margin: 0;
@@ -252,13 +260,14 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
 
         .invoice-details {
           text-align: right;
+          font-size: 9px;
         }
 
         .detail-row {
           display: flex;
           justify-content: space-between;
-          min-width: 200px;
-          margin-bottom: 8px;
+          min-width: 80px;
+          margin-bottom: 4px;
         }
 
         .detail-row .label {
@@ -268,56 +277,58 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
 
         .detail-row .value {
           font-weight: 600;
-          margin-left: 20px;
+          margin-left: 8px;
         }
 
         .customer-section {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 40px;
-          margin-bottom: 40px;
+          grid-template-columns: 2fr 1fr;
+          gap: 15px;
+          margin-bottom: 20px;
+          font-size: 9px;
         }
 
         .customer-section h3,
         .customer-section h4 {
           color: #d4a574;
           font-weight: 600;
-          margin-bottom: 8px;
-        }
-
-        .customer-section h3 {
-          font-size: 16px;
+          margin-bottom: 4px;
+          font-size: 10px;
         }
 
         .customer-section h4 {
-          font-size: 14px;
-          margin-top: 20px;
+          font-size: 9px;
+          margin-top: 8px;
         }
 
         .customer-name {
           font-weight: 600;
-          margin-bottom: 20px;
+          margin-bottom: 8px;
           color: #333;
+          font-size: 10px;
         }
 
         .address {
           color: #666;
-          line-height: 1.5;
+          line-height: 1.3;
+          font-size: 8px;
         }
 
         .items-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 40px;
+          margin-bottom: 20px;
+          font-size: 9px;
         }
 
         .items-table th {
           background: #f8f8f8;
-          padding: 12px;
+          padding: 6px;
           text-align: left;
           font-weight: 600;
           color: #d4a574;
           border-bottom: 1px solid #e0e0e0;
+          font-size: 9px;
         }
 
         .items-table th:last-child,
@@ -326,49 +337,52 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
         }
 
         .items-table td {
-          padding: 12px;
+          padding: 6px;
           border-bottom: 1px solid #f0f0f0;
+          font-size: 8px;
         }
 
         .footer-section {
           display: grid;
-          grid-template-columns: 1fr 300px;
-          gap: 40px;
+          grid-template-columns: 1fr 80px;
+          gap: 15px;
           align-items: start;
         }
 
         .notes h4 {
           color: #d4a574;
           font-weight: 600;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
+          font-size: 9px;
         }
 
         .gift-note {
           font-weight: 600;
           color: #333;
+          font-size: 8px;
         }
 
         .totals {
           background: #f8f8f8;
-          padding: 24px;
-          border-radius: 8px;
-          min-width: 280px;
+          padding: 8px;
+          border-radius: 4px;
+          min-width: 80px;
         }
 
         .total-row {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 12px;
-          padding: 6px 0;
-          font-size: 15px;
+          margin-bottom: 4px;
+          padding: 2px 0;
+          font-size: 8px;
         }
 
         .total-row.final {
-          border-top: 2px solid #d4a574;
-          margin-top: 16px;
-          padding-top: 16px;
+          border-top: 1px solid #d4a574;
+          margin-top: 6px;
+          padding-top: 6px;
           font-weight: 700;
-          font-size: 18px;
+          font-size: 9px;
         }
 
         .total-row .label {
@@ -386,8 +400,18 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
         }
 
         @media print {
-          body { padding: 20px 40px; }
-          .invoice-container { box-shadow: none; padding: 0 10px; }
+          body { 
+            padding: 0;
+            width: 148mm;
+            height: 210mm;
+          }
+          .invoice-container { 
+            box-shadow: none; 
+            padding: 6mm;
+          }
+          .invoice-title {
+            font-size: 20px;
+          }
         }
       </style>
     </head>
