@@ -867,16 +867,14 @@ export function OrderList({ onDataChange }: OrderListProps) {
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <span>Discount: -{order.discount.toFixed(2)}</span>
                             </div>
-                            <div className="flex items-center gap-1 font-medium">
-                              <DollarSign className="w-3 h-3" />
-                              {order.total_amount.toFixed(2)} {order.currency}
-                            </div>
+                             <div className="flex items-center gap-1 font-medium">
+                               {order.total_amount.toFixed(2)} {order.currency}
+                             </div>
                           </div>
                        ) : (
-                         <div className="flex items-center gap-1">
-                           <DollarSign className="w-3 h-3" />
-                           {order.total_amount.toFixed(2)} {order.currency}
-                         </div>
+                          <div className="flex items-center gap-1">
+                            {order.total_amount.toFixed(2)} {order.currency}
+                          </div>
                        )}
                      </div>
                    </TableCell>
