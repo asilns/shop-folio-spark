@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { Eye, DollarSign, FileText, Trash2, Filter, CalendarIcon, X } from 'lucide-react';
+import { Eye, DollarSign, FileText, Trash2, Filter, CalendarIcon, X, Edit3, Plus, Minus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Order {
@@ -25,6 +25,7 @@ interface Order {
   currency: string;
   created_at: string;
   customers: {
+    id: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -37,6 +38,7 @@ interface OrderItem {
   unit_price: number;
   total_price: number;
   products: {
+    id: string;
     name: string;
     sku?: string;
   };
@@ -69,6 +71,11 @@ export function OrderList({ onDataChange }: OrderListProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [fromDateOpen, setFromDateOpen] = useState(false);
   const [toDateOpen, setToDateOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [editOrderData, setEditOrderData] = useState<any>({});
+  const [editOrderItems, setEditOrderItems] = useState<any[]>([]);
   const { toast } = useToast();
 
   const fetchOrders = async () => {
@@ -78,6 +85,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
         .select(`
           *,
           customers (
+            id,
             first_name,
             last_name,
             email
@@ -125,6 +133,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
         .select(`
           *,
           products (
+            id,
             name,
             sku
           )
@@ -169,10 +178,179 @@ export function OrderList({ onDataChange }: OrderListProps) {
     }
   };
 
+  const fetchCustomers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .order('first_name');
+      
+      if (error) throw error;
+      setCustomers(data || []);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   const viewOrderDetails = async (order: Order) => {
     setSelectedOrder(order);
-    await fetchOrderItems(order.id);
+    setIsEditMode(false);
+    
+    const [itemsData] = await Promise.all([
+      fetchOrderItems(order.id),
+      fetchCustomers(),
+      fetchProducts()
+    ]);
+    
+    // Initialize edit data
+    setEditOrderData({
+      customer_id: order.customers.id || '',
+      discount: order.discount || 0
+    });
+    
     setShowOrderDetails(true);
+  };
+
+  const handleSaveOrderChanges = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      // Update order details
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update({
+          customer_id: editOrderData.customer_id,
+          discount: editOrderData.discount || 0
+        })
+        .eq('id', selectedOrder.id);
+
+      if (orderError) throw orderError;
+
+      // Update order items
+      for (const item of editOrderItems) {
+        if (item.isNew && !item.isDeleted) {
+          // Add new item
+          const { error } = await supabase
+            .from('order_items')
+            .insert({
+              order_id: selectedOrder.id,
+              product_id: item.product_id,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              total_price: item.quantity * item.unit_price
+            });
+          if (error) throw error;
+        } else if (!item.isNew && !item.isDeleted) {
+          // Update existing item
+          const { error } = await supabase
+            .from('order_items')
+            .update({
+              quantity: item.quantity,
+              total_price: item.quantity * item.unit_price
+            })
+            .eq('id', item.id);
+          if (error) throw error;
+        } else if (item.isDeleted) {
+          // Delete item
+          const { error } = await supabase
+            .from('order_items')
+            .delete()
+            .eq('id', item.id);
+          if (error) throw error;
+        }
+      }
+
+      // Recalculate order total
+      const itemTotal = editOrderItems
+        .filter(item => !item.isDeleted)
+        .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      
+      const finalTotal = itemTotal - (editOrderData.discount || 0);
+
+      await supabase
+        .from('orders')
+        .update({ total_amount: finalTotal })
+        .eq('id', selectedOrder.id);
+
+      toast({
+        title: "Success",
+        description: "Order updated successfully",
+      });
+
+      setShowOrderDetails(false);
+      setIsEditMode(false);
+      fetchOrders();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error updating order:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update order",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleItemQuantityChange = (index: number, newQuantity: number) => {
+    const updatedItems = [...editOrderItems];
+    updatedItems[index].quantity = newQuantity;
+    updatedItems[index].total_price = newQuantity * updatedItems[index].unit_price;
+    setEditOrderItems(updatedItems);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const updatedItems = [...editOrderItems];
+    if (updatedItems[index].isNew) {
+      updatedItems.splice(index, 1);
+    } else {
+      updatedItems[index].isDeleted = true;
+    }
+    setEditOrderItems(updatedItems);
+  };
+
+  const handleAddItem = () => {
+    const newItem = {
+      id: `new_${Date.now()}`,
+      product_id: '',
+      quantity: 1,
+      unit_price: 0,
+      total_price: 0,
+      isNew: true,
+      isDeleted: false,
+      products: { id: '', name: '', sku: '' }
+    };
+    setEditOrderItems([...editOrderItems, newItem]);
+  };
+
+  const handleProductChange = (index: number, productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const updatedItems = [...editOrderItems];
+      updatedItems[index].product_id = productId;
+      updatedItems[index].unit_price = product.price;
+      updatedItems[index].total_price = updatedItems[index].quantity * product.price;
+      updatedItems[index].products = {
+        id: product.id,
+        name: product.name,
+        sku: product.sku || ''
+      };
+      setEditOrderItems(updatedItems);
+    }
   };
 
   const createInvoice = async (order: Order) => {
@@ -344,6 +522,18 @@ export function OrderList({ onDataChange }: OrderListProps) {
   useEffect(() => {
     fetchOrders();
   }, [statusFilter, dateFromFilter, dateToFilter]);
+
+  // Initialize edit order items when orderItems change or edit mode is enabled
+  useEffect(() => {
+    if (isEditMode && orderItems.length > 0) {
+      setEditOrderItems(orderItems.map(item => ({
+        ...item,
+        product_id: item.products.id,
+        isNew: false,
+        isDeleted: false
+      })));
+    }
+  }, [isEditMode, orderItems]);
 
   const clearFilters = () => {
     setStatusFilter('all');
@@ -737,42 +927,79 @@ export function OrderList({ onDataChange }: OrderListProps) {
 
       {/* Order Details Dialog */}
       <Dialog open={showOrderDetails} onOpenChange={setShowOrderDetails}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Order Details - {selectedOrder?.order_number}</DialogTitle>
+            <DialogTitle>
+              {isEditMode ? 'Edit Order' : 'Order Details'} - {selectedOrder?.order_number}
+            </DialogTitle>
             <DialogDescription>
-              Complete order information and items
+              {isEditMode ? 'Modify order information and items' : 'Complete order information and items'}
             </DialogDescription>
           </DialogHeader>
           
           {selectedOrder && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Customer Information</h4>
+            <div className="space-y-6">
+              {/* Customer Information */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold">Customer Information</h4>
+                  {!isEditMode && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setIsEditMode(true)}
+                      className="gap-2"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit Order
+                    </Button>
+                  )}
+                </div>
+                
+                {isEditMode ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="customer">Customer</Label>
+                    <Select 
+                      value={editOrderData.customer_id} 
+                      onValueChange={(value) => setEditOrderData({...editOrderData, customer_id: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.first_name} {customer.last_name} - {customer.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
                   <div className="space-y-1 text-sm">
                     <div>{selectedOrder.customers.first_name} {selectedOrder.customers.last_name}</div>
                     <div className="text-muted-foreground">{selectedOrder.customers.email}</div>
                   </div>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Order Information</h4>
-                   <div className="space-y-1 text-sm">
-                     <div>Status: <Badge className={statusColors[selectedOrder.status as keyof typeof statusColors]}>{selectedOrder.status}</Badge></div>
-                     {selectedOrder.discount && selectedOrder.discount > 0 && (
-                       <>
-                         <div>Subtotal: ${(selectedOrder.total_amount + selectedOrder.discount).toFixed(2)} {selectedOrder.currency}</div>
-                         <div>Discount: -${selectedOrder.discount.toFixed(2)} {selectedOrder.currency}</div>
-                       </>
-                     )}
-                     <div>Total: ${selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</div>
-                     <div>Date: {new Date(selectedOrder.created_at).toLocaleDateString()}</div>
-                   </div>
-                </div>
+                )}
               </div>
 
+              {/* Order Items */}
               <div>
-                <h4 className="font-semibold mb-2">Order Items</h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold">Order Items</h4>
+                  {isEditMode && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleAddItem}
+                      className="gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Item
+                    </Button>
+                  )}
+                </div>
+                
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -780,29 +1007,192 @@ export function OrderList({ onDataChange }: OrderListProps) {
                       <TableHead>Quantity</TableHead>
                       <TableHead>Unit Price</TableHead>
                       <TableHead>Total</TableHead>
+                      {isEditMode && <TableHead>Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orderItems.map((item) => (
+                    {(isEditMode ? editOrderItems.filter(item => !item.isDeleted) : orderItems).map((item, index) => (
                       <TableRow key={item.id}>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{item.products.name}</div>
-                            {item.products.sku && (
-                              <div className="text-sm text-muted-foreground">SKU: {item.products.sku}</div>
-                            )}
-                          </div>
+                          {isEditMode ? (
+                            <Select 
+                              value={item.product_id} 
+                              onValueChange={(value) => handleProductChange(index, value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select product" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {products.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    {product.name} - ${product.price}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div>
+                              <div className="font-medium">{item.products.name}</div>
+                              {item.products.sku && (
+                                <div className="text-sm text-muted-foreground">SKU: {item.products.sku}</div>
+                              )}
+                            </div>
+                          )}
                         </TableCell>
-                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell>
+                          {isEditMode ? (
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) => handleItemQuantityChange(index, parseInt(e.target.value) || 1)}
+                              className="w-20"
+                            />
+                          ) : (
+                            item.quantity
+                          )}
+                        </TableCell>
                         <TableCell>${item.unit_price.toFixed(2)}</TableCell>
                         <TableCell>${item.total_price.toFixed(2)}</TableCell>
+                        {isEditMode && (
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveItem(index)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Discount and Totals */}
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-2">Discount</h4>
+                  {isEditMode ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="discount">Discount Amount</Label>
+                      <Input
+                        id="discount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editOrderData.discount}
+                        onChange={(e) => setEditOrderData({...editOrderData, discount: parseFloat(e.target.value) || 0})}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-sm">
+                      {selectedOrder.discount && selectedOrder.discount > 0 ? (
+                        `$${selectedOrder.discount.toFixed(2)}`
+                      ) : (
+                        'No discount applied'
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">Order Summary</h4>
+                  <div className="space-y-1 text-sm">
+                    {isEditMode ? (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Subtotal:</span>
+                          <span>
+                            ${editOrderItems
+                              .filter(item => !item.isDeleted)
+                              .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
+                              .toFixed(2)}
+                          </span>
+                        </div>
+                        {editOrderData.discount > 0 && (
+                          <div className="flex justify-between text-red-600">
+                            <span>Discount:</span>
+                            <span>-${editOrderData.discount.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-medium border-t pt-2">
+                          <span>Total:</span>
+                          <span>
+                            ${(editOrderItems
+                              .filter(item => !item.isDeleted)
+                              .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0) - editOrderData.discount
+                            ).toFixed(2)} {selectedOrder.currency}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {selectedOrder.discount && selectedOrder.discount > 0 && (
+                          <>
+                            <div className="flex justify-between">
+                              <span>Subtotal:</span>
+                              <span>${(selectedOrder.total_amount + selectedOrder.discount).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-red-600">
+                              <span>Discount:</span>
+                              <span>-${selectedOrder.discount.toFixed(2)}</span>
+                            </div>
+                          </>
+                        )}
+                        <div className="flex justify-between font-medium">
+                          <span>Total:</span>
+                          <span>${selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</span>
+                        </div>
+                        <div className="text-muted-foreground mt-2">
+                          Status: <Badge className={statusColors[selectedOrder.status as keyof typeof statusColors]}>{selectedOrder.status}</Badge>
+                        </div>
+                        <div className="text-muted-foreground">
+                          Date: {new Date(selectedOrder.created_at).toLocaleDateString()}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
+          
+          <DialogFooter>
+            {isEditMode ? (
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsEditMode(false);
+                    // Reset edit data
+                    setEditOrderData({
+                      customer_id: selectedOrder?.customers.id || '',
+                      discount: selectedOrder?.discount || 0
+                    });
+                    setEditOrderItems(orderItems.map(item => ({
+                      ...item,
+                      product_id: item.products.id || '',
+                      isNew: false
+                    })));
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveOrderChanges}>
+                  Save Changes
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => setShowOrderDetails(false)}>
+                Close
+              </Button>
+            )}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
