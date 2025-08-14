@@ -10,6 +10,7 @@ interface OrderData {
   id: string;
   order_number: string;
   total_amount: number;
+  discount: number;
   currency: string;
   created_at: string;
   customers: {
@@ -146,7 +147,7 @@ serve(async (req) => {
 
 function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: InvoiceSettings): string {
   const subtotal = items.reduce((sum, item) => sum + item.total_price, 0)
-  const discount = 0
+  const discount = order.discount || 0
   const total = subtotal - discount
 
   // Build company contact info
@@ -458,10 +459,12 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
               <span class="label">Subtotal</span>
               <span class="value">${order.currency}${subtotal.toFixed(2)}</span>
             </div>
+            ${discount > 0 ? `
             <div class="total-row">
               <span class="label">Discount</span>
-              <span class="value">${order.currency}${discount.toFixed(2)}</span>
+              <span class="value">-${order.currency}${discount.toFixed(2)}</span>
             </div>
+            ` : ''}
             <div class="total-row final">
               <span class="label">Total</span>
               <span class="value">${order.currency}${total.toFixed(2)}</span>

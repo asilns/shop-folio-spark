@@ -51,6 +51,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [discount, setDiscount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [newCustomer, setNewCustomer] = useState<NewCustomer>({
@@ -116,8 +117,13 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
     setOrderItems(updated);
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return orderItems.reduce((total, item) => total + (item.unit_price * item.quantity), 0);
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    return Math.max(0, subtotal - discount); // Ensure total never goes below 0
   };
 
   const handleSubmit = async () => {
@@ -153,6 +159,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
     setLoading(true);
 
     try {
+      const subtotalAmount = calculateSubtotal();
       const totalAmount = calculateTotal();
       let customerId = selectedCustomer;
 
@@ -189,6 +196,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
         .insert({
           customer_id: customerId,
           total_amount: totalAmount,
+          discount: discount,
           currency: defaultCurrency,
           status: 'pending',
           order_number: '' // This will be replaced by trigger
@@ -221,6 +229,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
       // Reset form
       setSelectedCustomer('');
       setOrderItems([]);
+      setDiscount(0);
       setShowNewCustomerForm(false);
       setNewCustomer({
         full_name: '',
@@ -438,9 +447,33 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
               )}
               
               {orderItems.length > 0 && (
-                <div className="flex justify-end pt-4 border-t">
-                  <div className="text-lg font-semibold">
-                    Total: ${calculateTotal().toFixed(2)}
+                <div className="space-y-2 pt-4 border-t">
+                  <div className="flex justify-between items-center">
+                    <span>Subtotal:</span>
+                    <span className="font-medium">${calculateSubtotal().toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center gap-4">
+                    <Label htmlFor="discount">Discount:</Label>
+                    <div className="flex items-center gap-2">
+                      <span>$</span>
+                      <Input
+                        id="discount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max={calculateSubtotal()}
+                        value={discount}
+                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                        className="w-24"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
+                    <span>Total:</span>
+                    <span>${calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               )}

@@ -157,6 +157,7 @@ export type Database = {
           created_at: string
           currency: string
           customer_id: string
+          discount: number | null
           id: string
           notes: string | null
           order_number: string
@@ -174,6 +175,7 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_id: string
+          discount?: number | null
           id?: string
           notes?: string | null
           order_number: string
@@ -191,6 +193,7 @@ export type Database = {
           created_at?: string
           currency?: string
           customer_id?: string
+          discount?: number | null
           id?: string
           notes?: string | null
           order_number?: string

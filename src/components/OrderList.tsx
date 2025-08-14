@@ -19,6 +19,7 @@ interface Order {
   order_number: string;
   status: string;
   total_amount: number;
+  discount: number;
   currency: string;
   created_at: string;
   customers: {
@@ -620,12 +621,29 @@ export function OrderList({ onDataChange }: OrderListProps) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="w-3 h-3" />
-                      {order.total_amount.toFixed(2)} {order.currency}
-                    </div>
-                  </TableCell>
+                   <TableCell>
+                     <div>
+                       {order.discount && order.discount > 0 ? (
+                         <div className="space-y-1">
+                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                             <span>Subtotal: ${(order.total_amount + order.discount).toFixed(2)}</span>
+                           </div>
+                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                             <span>Discount: -${order.discount.toFixed(2)}</span>
+                           </div>
+                           <div className="flex items-center gap-1 font-medium">
+                             <DollarSign className="w-3 h-3" />
+                             {order.total_amount.toFixed(2)} {order.currency}
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="flex items-center gap-1">
+                           <DollarSign className="w-3 h-3" />
+                           {order.total_amount.toFixed(2)} {order.currency}
+                         </div>
+                       )}
+                     </div>
+                   </TableCell>
                   <TableCell>
                     <Select
                       value={order.status}
@@ -736,11 +754,17 @@ export function OrderList({ onDataChange }: OrderListProps) {
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2">Order Information</h4>
-                  <div className="space-y-1 text-sm">
-                    <div>Status: <Badge className={statusColors[selectedOrder.status as keyof typeof statusColors]}>{selectedOrder.status}</Badge></div>
-                    <div>Total: ${selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</div>
-                    <div>Date: {new Date(selectedOrder.created_at).toLocaleDateString()}</div>
-                  </div>
+                   <div className="space-y-1 text-sm">
+                     <div>Status: <Badge className={statusColors[selectedOrder.status as keyof typeof statusColors]}>{selectedOrder.status}</Badge></div>
+                     {selectedOrder.discount && selectedOrder.discount > 0 && (
+                       <>
+                         <div>Subtotal: ${(selectedOrder.total_amount + selectedOrder.discount).toFixed(2)} {selectedOrder.currency}</div>
+                         <div>Discount: -${selectedOrder.discount.toFixed(2)} {selectedOrder.currency}</div>
+                       </>
+                     )}
+                     <div>Total: ${selectedOrder.total_amount.toFixed(2)} {selectedOrder.currency}</div>
+                     <div>Date: {new Date(selectedOrder.created_at).toLocaleDateString()}</div>
+                   </div>
                 </div>
               </div>
 
