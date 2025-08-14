@@ -31,6 +31,7 @@ interface Order {
     first_name: string;
     last_name: string;
     email: string;
+    phone: string;
   };
 }
 
@@ -90,7 +91,8 @@ export function OrderList({ onDataChange }: OrderListProps) {
             id,
             first_name,
             last_name,
-            email
+            email,
+            phone
           )
         `);
 
@@ -819,7 +821,7 @@ export function OrderList({ onDataChange }: OrderListProps) {
                         {order.customers.first_name} {order.customers.last_name}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {order.customers.email}
+                        {order.customers.phone || 'No phone number'}
                       </div>
                     </div>
                   </TableCell>
@@ -972,19 +974,19 @@ export function OrderList({ onDataChange }: OrderListProps) {
                         <SelectValue placeholder="Select customer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {customers.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.first_name} {customer.last_name} - {customer.email}
-                          </SelectItem>
-                        ))}
+                         {customers.map((customer) => (
+                           <SelectItem key={customer.id} value={customer.id}>
+                             {customer.first_name} {customer.last_name} - {customer.phone || customer.email}
+                           </SelectItem>
+                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 ) : (
-                  <div className="space-y-1 text-sm">
-                    <div>{selectedOrder.customers.first_name} {selectedOrder.customers.last_name}</div>
-                    <div className="text-muted-foreground">{selectedOrder.customers.email}</div>
-                  </div>
+                   <div className="space-y-1 text-sm">
+                     <div>{selectedOrder.customers.first_name} {selectedOrder.customers.last_name}</div>
+                     <div className="text-muted-foreground">{selectedOrder.customers.phone || 'No phone number'}</div>
+                   </div>
                 )}
               </div>
 
