@@ -9,7 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, DollarSign, Package } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PlusCircle, DollarSign, Package, Trash2, Edit3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Product {
@@ -32,6 +35,15 @@ export function ProductList({ onDataChange }: ProductListProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
+  const [bulkEditData, setBulkEditData] = useState({
+    price: '',
+    stock_quantity: '',
+    category: '',
+    is_active: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -105,6 +117,136 @@ export function ProductList({ onDataChange }: ProductListProps) {
       toast({
         title: "Error",
         description: error.message || "Failed to create product",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    const newSelected = new Set(selectedProducts);
+    if (checked) {
+      newSelected.add(productId);
+    } else {
+      newSelected.delete(productId);
+    }
+    setSelectedProducts(newSelected);
+    setShowBulkActions(newSelected.size > 0);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allProductIds = new Set(products.map(product => product.id));
+      setSelectedProducts(allProductIds);
+      setShowBulkActions(true);
+    } else {
+      setSelectedProducts(new Set());
+      setShowBulkActions(false);
+    }
+  };
+
+  const deleteProduct = async (productId: string, productName: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Product "${productName}" deleted successfully`,
+      });
+
+      fetchProducts();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete product",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const bulkDeleteProducts = async () => {
+    try {
+      const productIds = Array.from(selectedProducts);
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', productIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${productIds.length} products deleted successfully`,
+      });
+
+      fetchProducts();
+      onDataChange?.();
+      setSelectedProducts(new Set());
+      setShowBulkActions(false);
+    } catch (error: any) {
+      console.error('Error deleting products:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete products",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkEdit = async () => {
+    try {
+      const productIds = Array.from(selectedProducts);
+      const updateData: any = {};
+
+      // Only include fields that have values
+      if (bulkEditData.price) updateData.price = parseFloat(bulkEditData.price);
+      if (bulkEditData.stock_quantity) updateData.stock_quantity = parseInt(bulkEditData.stock_quantity);
+      if (bulkEditData.category) updateData.category = bulkEditData.category;
+      if (bulkEditData.is_active !== '') updateData.is_active = bulkEditData.is_active === 'true';
+
+      if (Object.keys(updateData).length === 0) {
+        toast({
+          title: "Error",
+          description: "Please select at least one field to update",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .update(updateData)
+        .in('id', productIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${productIds.length} products updated successfully`,
+      });
+
+      setBulkEditData({
+        price: '',
+        stock_quantity: '',
+        category: '',
+        is_active: ''
+      });
+      setShowBulkEditDialog(false);
+      fetchProducts();
+      onDataChange?.();
+      setSelectedProducts(new Set());
+      setShowBulkActions(false);
+    } catch (error: any) {
+      console.error('Error updating products:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update products",
         variant: "destructive",
       });
     }
@@ -219,19 +361,143 @@ export function ProductList({ onDataChange }: ProductListProps) {
         </div>
       </CardHeader>
       <CardContent>
+        {showBulkActions && (
+          <div className="mb-4 p-3 bg-muted rounded-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                {selectedProducts.size} products selected
+              </span>
+              <div className="flex gap-2">
+                <Dialog open={showBulkEditDialog} onOpenChange={setShowBulkEditDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Edit3 className="w-4 h-4" />
+                      Bulk Edit
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Bulk Edit Products</DialogTitle>
+                      <DialogDescription>
+                        Update multiple products at once. Leave fields empty to keep current values.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="bulk-price">Price ($)</Label>
+                          <Input
+                            id="bulk-price"
+                            type="number"
+                            step="0.01"
+                            value={bulkEditData.price}
+                            onChange={(e) => setBulkEditData({...bulkEditData, price: e.target.value})}
+                            placeholder="Leave empty to keep current"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="bulk-stock">Stock Quantity</Label>
+                          <Input
+                            id="bulk-stock"
+                            type="number"
+                            value={bulkEditData.stock_quantity}
+                            onChange={(e) => setBulkEditData({...bulkEditData, stock_quantity: e.target.value})}
+                            placeholder="Leave empty to keep current"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="bulk-category">Category</Label>
+                        <Input
+                          id="bulk-category"
+                          value={bulkEditData.category}
+                          onChange={(e) => setBulkEditData({...bulkEditData, category: e.target.value})}
+                          placeholder="Leave empty to keep current"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bulk-status">Status</Label>
+                        <Select value={bulkEditData.is_active} onValueChange={(value) => setBulkEditData({...bulkEditData, is_active: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Leave unchanged" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Leave unchanged</SelectItem>
+                            <SelectItem value="true">Active</SelectItem>
+                            <SelectItem value="false">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowBulkEditDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleBulkEdit}>
+                        Update Products
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="gap-2">
+                      <Trash2 className="w-4 h-4" />
+                      Delete Selected
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Selected Products</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete {selectedProducts.size} selected products? 
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={bulkDeleteProducts}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete Products
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={selectedProducts.size === products.length && products.length > 0}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all products"
+                />
+              </TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="w-16">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selectedProducts.has(product.id)}
+                    onCheckedChange={(checked) => handleSelectProduct(product.id, checked as boolean)}
+                    aria-label={`Select ${product.name}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div>
                     <div className="font-medium">{product.name}</div>
@@ -271,11 +537,37 @@ export function ProductList({ onDataChange }: ProductListProps) {
                     {product.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </TableCell>
+                <TableCell>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteProduct(product.id, product.name)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete Product
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
               </TableRow>
             ))}
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No products found. Add your first product to get started.
                 </TableCell>
               </TableRow>
