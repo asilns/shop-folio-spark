@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { Eye, DollarSign, FileText, Trash2, Filter, CalendarIcon, X, Edit3, Plus, Minus } from 'lucide-react';
+import { DollarSign, FileText, Trash2, Filter, CalendarIcon, X, Edit3, Plus, Minus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Order {
@@ -793,11 +793,16 @@ export function OrderList({ onDataChange }: OrderListProps) {
             </TableHeader>
             <TableBody>
               {orders.map((order) => (
-                <TableRow key={order.id}>
+                <TableRow 
+                  key={order.id} 
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => viewOrderDetails(order)}
+                >
                   <TableCell>
                     <Checkbox
                       checked={selectedOrders.has(order.id)}
                       onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                      onClick={(e) => e.stopPropagation()}
                       aria-label={`Select order ${order.order_number}`}
                     />
                   </TableCell>
@@ -837,12 +842,12 @@ export function OrderList({ onDataChange }: OrderListProps) {
                        )}
                      </div>
                    </TableCell>
-                  <TableCell>
-                    <Select
-                      value={order.status}
-                      onValueChange={(value) => updateOrderStatus(order.id, value)}
-                    >
-                      <SelectTrigger className="w-32">
+                   <TableCell>
+                     <Select
+                       value={order.status}
+                       onValueChange={(value) => updateOrderStatus(order.id, value)}
+                     >
+                      <SelectTrigger className="w-32" onClick={(e) => e.stopPropagation()}>
                         <SelectValue>
                           <Badge className={statusColors[order.status as keyof typeof statusColors]}>
                             {order.status}
@@ -867,27 +872,23 @@ export function OrderList({ onDataChange }: OrderListProps) {
                        <Button
                          variant="outline"
                          size="sm"
-                         onClick={() => viewOrderDetails(order)}
-                         title="View Order Details"
-                       >
-                         <Eye className="w-4 h-4" />
-                       </Button>
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         onClick={() => createInvoice(order)}
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           createInvoice(order);
+                         }}
                          title="Create Invoice"
                        >
                          <FileText className="w-4 h-4" />
                        </Button>
                       <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            title="Delete Order"
-                          >
+                         <AlertDialogTrigger asChild>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={(e) => e.stopPropagation()}
+                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                             title="Delete Order"
+                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </AlertDialogTrigger>
