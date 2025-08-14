@@ -47,6 +47,7 @@ interface InvoiceSettings {
   address_line2: string;
   city: string;
   country: string;
+  logo_url?: string;
 }
 
 serve(async (req) => {
@@ -206,12 +207,23 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
 
         .header {
           margin-bottom: 30px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+        }
+
+        .company-logo {
+          max-width: 120px;
+          max-height: 80px;
+          object-fit: contain;
         }
 
         .company-info {
           display: flex;
           flex-direction: column;
           gap: 8px;
+          flex: 1;
         }
 
         .contact-item {
@@ -383,6 +395,7 @@ function generateInvoiceHtml(order: OrderData, items: OrderItem[], settings: Inv
       <div class="invoice-container">
         <!-- Header -->
         <div class="header">
+          ${settings.logo_url ? `<img src="${settings.logo_url}" alt="Company Logo" class="company-logo">` : ''}
           <div class="company-info">
             ${contactInfo.map(info => `<div class="contact-item"><span>${info}</span></div>`).join('')}
             ${companyAddress ? `<div class="contact-item"><span>📍 ${companyAddress}</span></div>` : ''}

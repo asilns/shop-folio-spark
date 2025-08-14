@@ -97,6 +97,7 @@ export type Database = {
           facebook_account: string | null
           id: string
           instagram_account: string | null
+          logo_url: string | null
           phone_number: string | null
           snapchat_account: string | null
           updated_at: string
@@ -111,6 +112,7 @@ export type Database = {
           facebook_account?: string | null
           id?: string
           instagram_account?: string | null
+          logo_url?: string | null
           phone_number?: string | null
           snapchat_account?: string | null
           updated_at?: string
@@ -125,6 +127,7 @@ export type Database = {
           facebook_account?: string | null
           id?: string
           instagram_account?: string | null
+          logo_url?: string | null
           phone_number?: string | null
           snapchat_account?: string | null
           updated_at?: string

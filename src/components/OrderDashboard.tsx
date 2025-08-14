@@ -33,6 +33,7 @@ interface InvoiceSettings {
   address_line2: string;
   city: string;
   country: string;
+  logo_url?: string;
 }
 
 export function OrderDashboard() {
@@ -49,6 +50,7 @@ export function OrderDashboard() {
     return parseInt(localStorage.getItem('starting-order-number') || '1');
   });
   const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
   const { toast } = useToast();
 
   const fetchStats = async () => {
@@ -165,6 +167,102 @@ export function OrderDashboard() {
       toast({
         title: "Error",
         description: error.message || "Failed to update invoice settings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    if (!invoiceSettings) return;
+
+    // Validate file size (400KB limit)
+    if (file.size > 400 * 1024) {
+      toast({
+        title: "Error",
+        description: "Logo file size must be less than 400KB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Error",
+        description: "Logo must be a JPEG, PNG, WebP, or SVG file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLogoUploading(true);
+    
+    try {
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logos/${invoiceSettings.id}-${Date.now()}.${fileExt}`;
+
+      // Upload file to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      // Update invoice settings with logo URL
+      await handleInvoiceSettingsUpdate({ logo_url: urlData.publicUrl });
+
+      toast({
+        title: "Success",
+        description: "Logo uploaded successfully",
+      });
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload logo",
+        variant: "destructive",
+      });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!invoiceSettings?.logo_url) return;
+
+    try {
+      // Extract filename from URL to delete from storage
+      const url = new URL(invoiceSettings.logo_url);
+      const fileName = url.pathname.split('/').pop();
+      
+      if (fileName) {
+        await supabase.storage
+          .from('company-logos')
+          .remove([`logos/${fileName}`]);
+      }
+
+      // Update invoice settings to remove logo URL
+      await handleInvoiceSettingsUpdate({ logo_url: null });
+
+      toast({
+        title: "Success",
+        description: "Logo removed successfully",
+      });
+    } catch (error: any) {
+      console.error('Error removing logo:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove logo",
         variant: "destructive",
       });
     }
@@ -570,6 +668,74 @@ export function OrderDashboard() {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  {/* Logo Upload Section */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Company Logo</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Upload your company logo to appear on invoices. Maximum file size: 400KB. Supported formats: JPEG, PNG, WebP, SVG.
+                    </p>
+                    
+                    {invoiceSettings.logo_url ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-4">
+                          <img 
+                            src={invoiceSettings.logo_url} 
+                            alt="Company Logo" 
+                            className="h-16 w-auto object-contain border rounded-md p-2"
+                          />
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Current Logo</p>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={handleRemoveLogo}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              Remove Logo
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="logo-replace">Replace Logo</Label>
+                          <Input
+                            id="logo-replace"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleLogoUpload(file);
+                                e.target.value = ''; // Reset input
+                              }
+                            }}
+                            disabled={logoUploading}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="logo-upload">Upload Logo</Label>
+                        <Input
+                          id="logo-upload"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleLogoUpload(file);
+                              e.target.value = ''; // Reset input
+                            }
+                          }}
+                          disabled={logoUploading}
+                        />
+                        {logoUploading && (
+                          <p className="text-sm text-muted-foreground">Uploading logo...</p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-end">
