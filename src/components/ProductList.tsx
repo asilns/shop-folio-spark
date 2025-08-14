@@ -46,6 +46,8 @@ export function ProductList({ onDataChange }: ProductListProps) {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
   const [bulkEditData, setBulkEditData] = useState({
     price: '',
@@ -54,6 +56,15 @@ export function ProductList({ onDataChange }: ProductListProps) {
     is_active: ''
   });
   const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    sku: '',
+    stock_quantity: '',
+    category: '',
+    is_active: true,
+  });
+  const [editFormData, setEditFormData] = useState({
     name: '',
     description: '',
     price: '',
@@ -308,6 +319,61 @@ export function ProductList({ onDataChange }: ProductListProps) {
     }
   };
 
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setEditFormData({
+      name: product.name,
+      description: product.description || '',
+      price: product.price.toString(),
+      sku: product.sku || '',
+      stock_quantity: product.stock_quantity.toString(),
+      category: product.category || '',
+      is_active: product.is_active,
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    try {
+      const updateData = {
+        name: editFormData.name,
+        description: editFormData.description || null,
+        price: parseFloat(editFormData.price),
+        sku: editFormData.sku || null,
+        stock_quantity: parseInt(editFormData.stock_quantity),
+        category: editFormData.category || null,
+        is_active: editFormData.is_active,
+      };
+
+      const { error } = await supabase
+        .from('products')
+        .update(updateData)
+        .eq('id', editingProduct.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Product "${editFormData.name}" updated successfully`,
+      });
+
+      setShowEditDialog(false);
+      setEditingProduct(null);
+      fetchProducts();
+      onDataChange?.();
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update product",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
@@ -468,6 +534,103 @@ export function ProductList({ onDataChange }: ProductListProps) {
           </div>
         </div>
       </CardHeader>
+      
+      {/* Edit Product Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleEditSubmit}>
+            <DialogHeader>
+              <DialogTitle>Edit Product</DialogTitle>
+              <DialogDescription>
+                Update the product details.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div>
+                <Label htmlFor="edit-name">Product Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-price">Price ($)</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    step="0.01"
+                    value={editFormData.price}
+                    onChange={(e) => setEditFormData({...editFormData, price: e.target.value})}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-stock_quantity">Stock</Label>
+                  <Input
+                    id="edit-stock_quantity"
+                    type="number"
+                    value={editFormData.stock_quantity}
+                    onChange={(e) => setEditFormData({...editFormData, stock_quantity: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-sku">SKU</Label>
+                  <Input
+                    id="edit-sku"
+                    value={editFormData.sku}
+                    onChange={(e) => setEditFormData({...editFormData, sku: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-category">Category</Label>
+                  <Select value={editFormData.category} onValueChange={(value) => setEditFormData({...editFormData, category: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No category</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="edit-is_active"
+                  checked={editFormData.is_active}
+                  onCheckedChange={(checked) => setEditFormData({...editFormData, is_active: checked})}
+                />
+                <Label htmlFor="edit-is_active">Active Product</Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Update Product</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       <CardContent>
         {showBulkActions && (
           <div className="mb-4 p-3 bg-muted rounded-lg">
@@ -654,30 +817,40 @@ export function ProductList({ onDataChange }: ProductListProps) {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Product</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete "{product.name}"? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteProduct(product.id, product.name)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Delete Product
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleEditProduct(product)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{product.name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteProduct(product.id, product.name)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete Product
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
