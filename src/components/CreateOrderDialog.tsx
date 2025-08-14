@@ -472,13 +472,13 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                 <div className="space-y-2 pt-4 border-t">
                   <div className="flex justify-between items-center">
                     <span>Subtotal:</span>
-                    <span className="font-medium">${calculateSubtotal().toFixed(2)}</span>
+                    <span className="font-medium">{calculateSubtotal().toFixed(2)}</span>
                   </div>
                   
                   <div className="flex justify-between items-center gap-4">
                     <Label htmlFor="discount">Discount:</Label>
                     <div className="flex items-center gap-2">
-                      <span>$</span>
+                      <span></span>
                       <Input
                         id="discount"
                         type="number"
@@ -495,7 +495,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                   
                   <div className="flex justify-between items-center text-lg font-semibold border-t pt-2">
                     <span>Total:</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span>{calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               )}
