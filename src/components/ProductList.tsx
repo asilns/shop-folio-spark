@@ -43,6 +43,9 @@ export function ProductList({ onDataChange }: ProductListProps) {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showDeleteWarningDialog, setShowDeleteWarningDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{id: string, name: string} | null>(null);
+  const [deleteWarningInfo, setDeleteWarningInfo] = useState<{orderCount: number, orderItemCount: number} | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
@@ -207,6 +210,55 @@ export function ProductList({ onDataChange }: ProductListProps) {
       setSelectedProducts(new Set());
       setShowBulkActions(false);
     }
+  };
+
+  const checkOrderItemsForProduct = async (productId: string): Promise<{orderCount: number, orderItemCount: number}> => {
+    try {
+      // Check if there are any order items that reference this product
+      const { data: orderItems, error } = await supabase
+        .from('order_items')
+        .select('order_id, quantity')
+        .eq('product_id', productId);
+
+      if (error) throw error;
+
+      if (orderItems && orderItems.length > 0) {
+        // Get unique order IDs
+        const uniqueOrderIds = new Set(orderItems.map(item => item.order_id));
+        return {
+          orderCount: uniqueOrderIds.size,
+          orderItemCount: orderItems.length
+        };
+      }
+
+      return { orderCount: 0, orderItemCount: 0 };
+    } catch (error) {
+      console.error('Error checking order items:', error);
+      return { orderCount: 0, orderItemCount: 0 };
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    // Check for existing order items first
+    const orderInfo = await checkOrderItemsForProduct(productId);
+    
+    if (orderInfo.orderItemCount > 0) {
+      // Show warning dialog
+      setProductToDelete({ id: productId, name: productName });
+      setDeleteWarningInfo(orderInfo);
+      setShowDeleteWarningDialog(true);
+    } else {
+      // No order items, proceed with direct deletion
+      await deleteProduct(productId, productName);
+    }
+  };
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return;
+    await deleteProduct(productToDelete.id, productToDelete.name);
+    setShowDeleteWarningDialog(false);
+    setProductToDelete(null);
+    setDeleteWarningInfo(null);
   };
 
   const deleteProduct = async (productId: string, productName: string) => {
@@ -844,7 +896,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => deleteProduct(product.id, product.name)}
+                            onClick={() => handleDeleteProduct(product.id, product.name)}
                             className="bg-red-600 hover:bg-red-700"
                           >
                             Delete Product
@@ -865,6 +917,41 @@ export function ProductList({ onDataChange }: ProductListProps) {
             )}
           </TableBody>
         </Table>
+        
+        {/* Delete Warning Dialog */}
+        <AlertDialog open={showDeleteWarningDialog} onOpenChange={setShowDeleteWarningDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Warning: Product Has Existing Orders</AlertDialogTitle>
+              <AlertDialogDescription>
+                The product "{productToDelete?.name}" cannot be deleted because it is referenced in existing orders.
+                <br /><br />
+                <strong>Details:</strong>
+                <br />
+                • {deleteWarningInfo?.orderItemCount} order items across {deleteWarningInfo?.orderCount} orders reference this product
+                <br /><br />
+                If you proceed, <strong>all related order items will also be deleted</strong>. This action cannot be undone.
+                <br /><br />
+                Consider deactivating the product instead of deleting it to preserve order history.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setShowDeleteWarningDialog(false);
+                setProductToDelete(null);
+                setDeleteWarningInfo(null);
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteProduct}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete Anyway
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
