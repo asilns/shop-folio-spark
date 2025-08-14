@@ -16,6 +16,7 @@ interface Customer {
   first_name: string;
   last_name: string;
   email: string;
+  phone: string;
 }
 
 interface Product {
@@ -70,7 +71,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
     try {
       const { data, error } = await supabase
         .from('customers')
-        .select('id, first_name, last_name, email')
+        .select('id, first_name, last_name, email, phone')
         .order('first_name');
 
       if (error) throw error;
@@ -374,7 +375,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
                 <SelectContent>
                   {customers.map((customer) => (
                     <SelectItem key={customer.id} value={customer.id}>
-                      {customer.first_name} {customer.last_name} ({customer.email})
+                      {customer.first_name} {customer.last_name} ({customer.phone || 'No phone'})
                     </SelectItem>
                   ))}
                 </SelectContent>
