@@ -557,34 +557,7 @@ export function OrderDashboard() {
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
-                  This currency will be used as the default for new orders.
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="starting-order-number">Starting Order Number</Label>
-                <div className="flex gap-2 items-end">
-                  <Input
-                    id="starting-order-number"
-                    type="number"
-                    min="1"
-                    value={startingOrderNumber}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 1;
-                      setStartingOrderNumber(value);
-                    }}
-                    className="w-48"
-                    placeholder="Enter starting number"
-                  />
-                  <Button 
-                    onClick={() => handleStartingOrderNumberChange(startingOrderNumber)}
-                    variant="outline"
-                  >
-                    Update
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Set the starting number for your order sequence. The next order will start from this number.
+                  {t('currencyDescription')}
                 </p>
               </div>
             </CardContent>
@@ -700,6 +673,33 @@ export function OrderDashboard() {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="starting-order-number">{t('startingOrderNumber')}</Label>
+                    <div className="flex gap-2 items-end">
+                      <Input
+                        id="starting-order-number"
+                        type="number"
+                        min="1"
+                        value={startingOrderNumber}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 1;
+                          setStartingOrderNumber(value);
+                        }}
+                        className="w-48"
+                        placeholder="Enter starting number"
+                      />
+                      <Button 
+                        onClick={() => handleStartingOrderNumberChange(startingOrderNumber)}
+                        variant="outline"
+                      >
+                        {t('update')}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('orderNumberDescription')}
+                    </p>
                   </div>
 
                   {/* Logo Upload Section */}

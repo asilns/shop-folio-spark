@@ -236,15 +236,15 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
           <div>
             <CardTitle className="flex items-center gap-2">
               <Settings2 className="w-5 h-5" />
-              Order Status Management
+              {t('orderStatusManagement')}
             </CardTitle>
             <CardDescription>
-              Configure the available order statuses and their appearance
+              {t('configureOrderStatuses')}
             </CardDescription>
           </div>
           <Button onClick={openCreateDialog} className="gap-2">
             <PlusCircle className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Status</span>
+            <span className="hidden sm:inline">{t('addStatus')}</span>
           </Button>
         </div>
       </CardHeader>
@@ -252,12 +252,12 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Display Name</TableHead>
-              <TableHead>System Name</TableHead>
-              <TableHead>Color</TableHead>
-              <TableHead>Sort Order</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t('displayName')}</TableHead>
+              <TableHead>{t('systemName')}</TableHead>
+              <TableHead>{t('color')}</TableHead>
+              <TableHead>{t('sortOrder')}</TableHead>
+              <TableHead>{t('active')}</TableHead>
+              <TableHead>{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -281,31 +281,30 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(status)}
-                      title="Edit status"
+                      title={t('editOrderStatus')}
                     >
                       <Edit3 className="w-4 h-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" title="Delete status">
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" title={t('deleteOrderStatus')}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Order Status</AlertDialogTitle>
+                          <AlertDialogTitle>{t('deleteOrderStatus')}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete the "{status.display_name}" status? 
-                            This action cannot be undone.
+                            {t('deleteStatusConfirmation')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleDelete(status)}
                             className="bg-red-600 hover:bg-red-700"
                           >
-                            Delete
+                            {t('delete')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -321,14 +320,14 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Order Status</DialogTitle>
+              <DialogTitle>{t('createOrderStatus')}</DialogTitle>
               <DialogDescription>
-                Add a new order status to your system
+                {t('addNewOrderStatus')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="display_name">Display Name</Label>
+                <Label htmlFor="display_name">{t('displayName')}</Label>
                 <Input
                   id="display_name"
                   value={formData.display_name}
@@ -337,7 +336,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="color">Color</Label>
+                <Label htmlFor="color">{t('color')}</Label>
                 <Select value={formData.color} onValueChange={(value) => setFormData({ ...formData, color: value })}>
                   <SelectTrigger>
                     <SelectValue />
@@ -346,7 +345,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                     {colorOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex items-center gap-2">
-                          <Badge className={option.value}>Sample</Badge>
+                          <Badge className={option.value}>{t('sample')}</Badge>
                           {option.label}
                         </div>
                       </SelectItem>
@@ -355,7 +354,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sort_order">Sort Order</Label>
+                <Label htmlFor="sort_order">{t('sortOrder')}</Label>
                 <Input
                   id="sort_order"
                   type="number"
@@ -366,12 +365,12 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
             </div>
             <DialogFooter>
                           <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                            <span className="hidden sm:inline">Cancel</span>
+                            <span className="hidden sm:inline">{t('cancel')}</span>
                             <span className="sm:hidden">✕</span>
                           </Button>
                           <Button onClick={handleCreate} disabled={!formData.display_name.trim()}>
-                            <span className="hidden sm:inline">Create Status</span>
-                            <span className="sm:hidden">Create</span>
+                            <span className="hidden sm:inline">{t('createStatus')}</span>
+                            <span className="sm:hidden">{t('create')}</span>
                           </Button>
             </DialogFooter>
           </DialogContent>
@@ -381,19 +380,19 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Order Status</DialogTitle>
+              <DialogTitle>{t('editOrderStatus')}</DialogTitle>
               <DialogDescription>
-                Update the order status settings
+                {t('updateOrderStatus')}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>System Name</Label>
+                <Label>{t('systemName')}</Label>
                 <Input value={editingStatus?.name || ''} disabled className="bg-muted" />
-                <p className="text-sm text-muted-foreground">System name cannot be changed</p>
+                <p className="text-sm text-muted-foreground">{t('systemNameCannotBeChanged')}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit_display_name">Display Name</Label>
+                <Label htmlFor="edit_display_name">{t('displayName')}</Label>
                 <Input
                   id="edit_display_name"
                   value={formData.display_name}
@@ -401,7 +400,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit_color">Color</Label>
+                <Label htmlFor="edit_color">{t('color')}</Label>
                 <Select value={formData.color} onValueChange={(value) => setFormData({ ...formData, color: value })}>
                   <SelectTrigger>
                     <SelectValue />
@@ -410,7 +409,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                     {colorOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex items-center gap-2">
-                          <Badge className={option.value}>Sample</Badge>
+                          <Badge className={option.value}>{t('sample')}</Badge>
                           {option.label}
                         </div>
                       </SelectItem>
@@ -419,7 +418,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit_sort_order">Sort Order</Label>
+                <Label htmlFor="edit_sort_order">{t('sortOrder')}</Label>
                 <Input
                   id="edit_sort_order"
                   type="number"
@@ -430,12 +429,12 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-                <span className="hidden sm:inline">Cancel</span>
+                <span className="hidden sm:inline">{t('cancel')}</span>
                 <span className="sm:hidden">✕</span>
               </Button>
               <Button onClick={handleEdit} disabled={!formData.display_name.trim()}>
-                <span className="hidden sm:inline">Update Status</span>
-                <span className="sm:hidden">Update</span>
+                <span className="hidden sm:inline">{t('updateStatus')}</span>
+                <span className="sm:hidden">{t('update')}</span>
               </Button>
             </DialogFooter>
           </DialogContent>

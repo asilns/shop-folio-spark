@@ -185,6 +185,9 @@ const translations = {
     'createNewCustomer': 'Create New Customer',
     'createNewProduct': 'Create New Product',
     'deleteStatus': 'Delete Status',
+    'startingOrderNumber': 'Starting Order Number',
+    'orderNumberDescription': 'Set the starting number for your order sequence. The next order will start from this number.',
+    'currencyDescription': 'This currency will be used as the default for new orders.',
   },
   ar: {
     // Navigation & Dashboard
@@ -362,6 +365,9 @@ const translations = {
     'createNewCustomer': 'إنشاء عميل جديد',
     'createNewProduct': 'إنشاء منتج جديد',
     'deleteStatus': 'حذف الحالة',
+    'startingOrderNumber': 'رقم الطلب الابتدائي',
+    'orderNumberDescription': 'تعيين الرقم الابتدائي لتسلسل الطلبات. الطلب التالي سيبدأ من هذا الرقم.',
+    'currencyDescription': 'ستستخدم هذه العملة كافتراضية للطلبات الجديدة.',
   }
 };
 
