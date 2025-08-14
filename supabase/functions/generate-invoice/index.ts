@@ -1,0 +1,436 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+interface OrderData {
+  id: string;
+  order_number: string;
+  total_amount: number;
+  currency: string;
+  created_at: string;
+  customers: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    address_line1?: string;
+    address_line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+  };
+}
+
+interface OrderItem {
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  products: {
+    name: string;
+    sku?: string;
+  };
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    )
+
+    const { orderId } = await req.json()
+    console.log('Generating invoice for order:', orderId)
+
+    // Fetch order details
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        customers (
+          first_name,
+          last_name,
+          email,
+          phone,
+          address_line1,
+          address_line2,
+          city,
+          state,
+          postal_code,
+          country
+        )
+      `)
+      .eq('id', orderId)
+      .single()
+
+    if (orderError) {
+      console.error('Error fetching order:', orderError)
+      throw orderError
+    }
+
+    // Fetch order items
+    const { data: orderItems, error: itemsError } = await supabase
+      .from('order_items')
+      .select(`
+        *,
+        products (
+          name,
+          sku
+        )
+      `)
+      .eq('order_id', orderId)
+
+    if (itemsError) {
+      console.error('Error fetching order items:', itemsError)
+      throw itemsError
+    }
+
+    const order = orderData as OrderData
+    const items = orderItems as OrderItem[]
+
+    // Generate HTML for the invoice
+    const invoiceHtml = generateInvoiceHtml(order, items)
+    
+    // For now, return the HTML which can be converted to PDF on the client side
+    return new Response(invoiceHtml, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/html',
+      },
+    })
+
+  } catch (error) {
+    console.error('Error generating invoice:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
+  }
+})
+
+function generateInvoiceHtml(order: OrderData, items: OrderItem[]): string {
+  const subtotal = items.reduce((sum, item) => sum + item.total_price, 0)
+  const discount = 0
+  const advancePay = 0
+  const remaining = subtotal - discount - advancePay
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Invoice ${order.order_number}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+          line-height: 1.4;
+          color: #333;
+          background: #fff;
+          padding: 40px;
+        }
+
+        .invoice-container {
+          max-width: 800px;
+          margin: 0 auto;
+          background: #fff;
+        }
+
+        .header {
+          margin-bottom: 30px;
+        }
+
+        .company-info {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .contact-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          color: #666;
+        }
+
+        .invoice-title-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 40px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid #f0f0f0;
+        }
+
+        .invoice-title {
+          font-size: 48px;
+          color: #d4a574;
+          font-weight: 300;
+          margin: 0;
+        }
+
+        .invoice-details {
+          text-align: right;
+        }
+
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          min-width: 200px;
+          margin-bottom: 8px;
+        }
+
+        .detail-row .label {
+          color: #d4a574;
+          font-weight: 600;
+        }
+
+        .detail-row .value {
+          font-weight: 600;
+          margin-left: 20px;
+        }
+
+        .customer-section {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+          margin-bottom: 40px;
+        }
+
+        .customer-section h3,
+        .customer-section h4 {
+          color: #d4a574;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        .customer-section h3 {
+          font-size: 16px;
+        }
+
+        .customer-section h4 {
+          font-size: 14px;
+          margin-top: 20px;
+        }
+
+        .customer-name {
+          font-weight: 600;
+          margin-bottom: 20px;
+          color: #333;
+        }
+
+        .address {
+          color: #666;
+          line-height: 1.5;
+        }
+
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 40px;
+        }
+
+        .items-table th {
+          background: #f8f8f8;
+          padding: 12px;
+          text-align: left;
+          font-weight: 600;
+          color: #d4a574;
+          border-bottom: 1px solid #e0e0e0;
+        }
+
+        .items-table th:last-child,
+        .items-table td:last-child {
+          text-align: right;
+        }
+
+        .items-table td {
+          padding: 12px;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        .footer-section {
+          display: grid;
+          grid-template-columns: 1fr 300px;
+          gap: 40px;
+          align-items: start;
+        }
+
+        .notes h4 {
+          color: #d4a574;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        .gift-note {
+          font-weight: 600;
+          color: #333;
+        }
+
+        .totals {
+          background: #f8f8f8;
+          padding: 20px;
+          border-radius: 8px;
+        }
+
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          padding: 4px 0;
+        }
+
+        .total-row.final {
+          border-top: 2px solid #d4a574;
+          margin-top: 12px;
+          padding-top: 12px;
+          font-weight: 600;
+          font-size: 16px;
+        }
+
+        .total-row .label {
+          color: #666;
+        }
+
+        .total-row .value {
+          font-weight: 600;
+          color: #333;
+        }
+
+        .total-row.final .label,
+        .total-row.final .value {
+          color: #d4a574;
+        }
+
+        @media print {
+          body { padding: 0; }
+          .invoice-container { box-shadow: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="invoice-container">
+        <!-- Header -->
+        <div class="header">
+          <div class="company-info">
+            <div class="contact-item">
+              <span>📞 974 55110219</span>
+            </div>
+            <div class="contact-item">
+              <span>📧 the.rainboo</span>
+            </div>
+            <div class="contact-item">
+              <span>📍 Doha - Qatar</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invoice Title -->
+        <div class="invoice-title-section">
+          <h1 class="invoice-title">Invoice</h1>
+          <div class="invoice-details">
+            <div class="detail-row">
+              <span class="label">Invoice #</span>
+              <span class="value">${order.order_number}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Submitted on</span>
+              <span class="value">${new Date(order.created_at).toLocaleDateString('en-GB')}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="customer-section">
+          <div class="customer-info">
+            <h3>Invoice for</h3>
+            <p class="customer-name">${order.customers.first_name} ${order.customers.last_name}</p>
+            
+            <h4>Address</h4>
+            <p class="address">
+              ${order.customers.address_line1 || 'Ask for location'}<br>
+              ${order.customers.address_line2 ? order.customers.address_line2 + '<br>' : ''}
+              ${order.customers.city ? order.customers.city + ', ' : ''}
+              ${order.customers.state || ''} ${order.customers.postal_code || ''}<br>
+              ${order.customers.country || ''}
+            </p>
+          </div>
+          
+          <div class="contact-info">
+            <h4>Phone</h4>
+            <p>${order.customers.phone || 'N/A'}</p>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Unit price</th>
+              <th>Total price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(item => `
+              <tr>
+                <td>${item.products.name}</td>
+                <td>${item.quantity}</td>
+                <td>${order.currency}${item.unit_price.toFixed(2)}</td>
+                <td>${order.currency}${item.total_price.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <!-- Notes and Totals -->
+        <div class="footer-section">
+          <div class="notes">
+            <h4>Notes:</h4>
+            <p class="gift-note">ITS A GIFT FREE DELIVERY</p>
+          </div>
+          
+          <div class="totals">
+            <div class="total-row">
+              <span class="label">Total</span>
+              <span class="value">${order.currency}${subtotal.toFixed(2)}</span>
+            </div>
+            <div class="total-row">
+              <span class="label">Discount</span>
+              <span class="value">${order.currency}${discount.toFixed(2)}</span>
+            </div>
+            <div class="total-row">
+              <span class="label">Advance Pay</span>
+              <span class="value">-${order.currency}${advancePay.toFixed(2)}</span>
+            </div>
+            <div class="total-row final">
+              <span class="label">Remaining</span>
+              <span class="value">${order.currency}${remaining.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+}

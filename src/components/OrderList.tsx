@@ -172,11 +172,44 @@ export function OrderList({ onDataChange }: OrderListProps) {
     setShowOrderDetails(true);
   };
 
-  const createInvoice = (order: Order) => {
-    toast({
-      title: "Invoice Created",
-      description: `Invoice created for order ${order.order_number}`,
-    });
+  const createInvoice = async (order: Order) => {
+    try {
+      toast({
+        title: "Generating Invoice",
+        description: "Please wait while we generate your invoice...",
+      });
+
+      const response = await supabase.functions.invoke('generate-invoice', {
+        body: { orderId: order.id }
+      });
+
+      if (response.error) throw response.error;
+
+      // Open the HTML invoice in a new window for printing/saving as PDF
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(response.data);
+        newWindow.document.close();
+        
+        // Focus the new window and trigger print dialog
+        newWindow.focus();
+        setTimeout(() => {
+          newWindow.print();
+        }, 500);
+      }
+
+      toast({
+        title: "Invoice Generated",
+        description: `Invoice for order ${order.order_number} opened in new window`,
+      });
+    } catch (error: any) {
+      console.error('Error generating invoice:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate invoice",
+        variant: "destructive",
+      });
+    }
   };
 
   const deleteOrder = async (orderId: string, orderNumber: string) => {
