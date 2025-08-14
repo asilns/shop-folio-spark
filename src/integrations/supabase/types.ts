@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          password_hash: string
+          role: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          password_hash: string
+          role?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          password_hash?: string
+          role?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string
@@ -35,6 +65,33 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action_type: string
+          admin_username: string
+          affected_user: string | null
+          created_at: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_username: string
+          affected_user?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_username?: string
+          affected_user?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
         }
         Relationships: []
       }
@@ -110,6 +167,48 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_users: {
+        Row: {
+          deleted_at: string
+          deleted_by: string
+          id: string
+          last_login: string | null
+          original_user_id: string
+          password_hash: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          username: string
+        }
+        Insert: {
+          deleted_at?: string
+          deleted_by: string
+          id?: string
+          last_login?: string | null
+          original_user_id: string
+          password_hash: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          username: string
+        }
+        Update: {
+          deleted_at?: string
+          deleted_by?: string
+          id?: string
+          last_login?: string | null
+          original_user_id?: string
+          password_hash?: string
+          pin?: string
+          store_name?: string
+          subscription_date?: string
+          subscription_expiry?: string
+          username?: string
+        }
+        Relationships: []
+      }
       invoice_settings: {
         Row: {
           address_line1: string | null
@@ -155,6 +254,45 @@ export type Database = {
           phone_number?: string | null
           snapchat_account?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      managed_users: {
+        Row: {
+          created_at: string
+          id: string
+          last_login: string | null
+          password_hash: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_login?: string | null
+          password_hash: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_login?: string | null
+          password_hash?: string
+          pin?: string
+          store_name?: string
+          subscription_date?: string
+          subscription_expiry?: string
+          updated_at?: string
+          username?: string
         }
         Relationships: []
       }
@@ -382,8 +520,24 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_admin_role: {
+        Args: { admin_id: string }
+        Returns: string
+      }
+      purge_old_deleted_users: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       reset_order_sequence: {
         Args: { new_start: number }
+        Returns: undefined
+      }
+      restore_deleted_user: {
+        Args: { admin_username: string; deleted_user_id: string }
+        Returns: undefined
+      }
+      soft_delete_user: {
+        Args: { admin_username: string; user_id: string }
         Returns: undefined
       }
     }
