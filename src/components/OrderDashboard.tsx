@@ -15,6 +15,7 @@ import { OrderList } from './OrderList';
 import { CreateOrderDialog } from './CreateOrderDialog';
 import { ThemeToggle } from './theme-toggle';
 import { OrderStatusSettings } from './OrderStatusSettings';
+import { LanguageSelector } from './LanguageSelector';
 import { useToast } from '@/hooks/use-toast';
 
 interface DashboardStats {
@@ -374,6 +375,9 @@ export function OrderDashboard() {
               <CardDescription>Configure your application preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Language Selection */}
+              <LanguageSelector />
+              
               <div className="space-y-2">
                 <Label htmlFor="currency">Default Currency</Label>
                 <Select value={currency} onValueChange={handleCurrencyChange}>
