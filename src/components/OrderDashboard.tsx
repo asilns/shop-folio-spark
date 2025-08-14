@@ -104,6 +104,31 @@ export function OrderDashboard() {
   useEffect(() => {
     fetchStats();
     fetchInvoiceSettings();
+    
+    // Initialize order sequence if this is the first time
+    const initializeSequence = async () => {
+      try {
+        const savedStartingNumber = localStorage.getItem('starting-order-number');
+        if (savedStartingNumber) {
+          const startNum = parseInt(savedStartingNumber);
+          // Only reset if the current sequence value is less than our setting
+          const { data: seqData } = await supabase
+            .from('orders')
+            .select('order_number')
+            .order('created_at', { ascending: false })
+            .limit(1);
+          
+          if (!seqData || seqData.length === 0) {
+            // No orders exist, set the sequence to our starting number
+            await supabase.rpc('reset_order_sequence', { new_start: startNum });
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing sequence:', error);
+      }
+    };
+    
+    initializeSequence();
   }, []);
 
   const handleCurrencyChange = (newCurrency: string) => {
