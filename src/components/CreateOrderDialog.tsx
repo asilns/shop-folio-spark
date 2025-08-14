@@ -219,7 +219,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
           currency: defaultCurrency,
           status: orderStatuses[0]?.name || 'pending',
           notes: notes || null,
-          order_number: '' // This will be replaced by trigger
+          order_number: ''
         })
         .select()
         .single();
