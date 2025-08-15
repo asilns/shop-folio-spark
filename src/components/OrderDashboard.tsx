@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +51,7 @@ interface WhatsAppSettings {
 
 export function OrderDashboard() {
   const { t } = useLanguage();
-  const { profile, signOut, isAdmin } = useAuth();
+  const { user, signOut } = useStoreAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
@@ -75,13 +75,9 @@ export function OrderDashboard() {
   const [logoUploading, setLogoUploading] = useState(false);
   const { toast } = useToast();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/store-login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+  const handleSignOut = () => {
+    signOut();
+    navigate('/store-login');
   };
 
   const fetchStats = async () => {
@@ -368,21 +364,10 @@ export function OrderDashboard() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 mr-4">
             <span className="text-sm text-muted-foreground">
-              {t('welcomeBack')}, {profile?.username}
+              {t('welcomeBack')}, {user?.store_name || user?.username}
             </span>
-            {isAdmin && (
-              <Badge variant="secondary" className="text-xs">
-                {t('admin')}
-              </Badge>
-            )}
           </div>
           <ThemeToggle />
-          {isAdmin && (
-            <Button variant="outline" onClick={() => navigate('/admin')} className="gap-2">
-              <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('adminPanel')}</span>
-            </Button>
-          )}
           <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t('createOrder')}</span>
