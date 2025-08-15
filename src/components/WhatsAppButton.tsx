@@ -137,9 +137,8 @@ export function WhatsAppButton({ order, settings, variant = 'default' }: WhatsAp
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" disabled={loading}>
-            <MessageCircle className="w-4 h-4 mr-1" />
-            WhatsApp
+          <Button variant="outline" size="sm" disabled={loading} title="WhatsApp">
+            <MessageCircle className="w-4 h-4" />
             <ChevronDown className="w-3 h-3 ml-1" />
           </Button>
         </DropdownMenuTrigger>
@@ -167,10 +166,9 @@ export function WhatsAppButton({ order, settings, variant = 'default' }: WhatsAp
       size="sm"
       onClick={handleSendWhatsApp}
       disabled={loading}
-      className="whitespace-nowrap"
+      title="WhatsApp"
     >
-      <MessageCircle className="w-4 h-4 mr-1" />
-      WhatsApp
+      <MessageCircle className="w-4 h-4" />
     </Button>
   );
 }
