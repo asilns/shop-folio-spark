@@ -101,6 +101,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          store_id: string | null
           updated_at: string
         }
         Insert: {
@@ -108,6 +109,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          store_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -115,9 +117,18 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          store_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -133,6 +144,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           state: string | null
+          store_id: string | null
           updated_at: string
         }
         Insert: {
@@ -148,6 +160,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           state?: string | null
+          store_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -163,9 +176,18 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           state?: string | null
+          store_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       deleted_users: {
         Row: {
@@ -223,6 +245,7 @@ export type Database = {
           logo_url: string | null
           phone_number: string | null
           snapchat_account: string | null
+          store_id: string | null
           updated_at: string
         }
         Insert: {
@@ -238,6 +261,7 @@ export type Database = {
           logo_url?: string | null
           phone_number?: string | null
           snapchat_account?: string | null
+          store_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -253,9 +277,18 @@ export type Database = {
           logo_url?: string | null
           phone_number?: string | null
           snapchat_account?: string | null
+          store_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invoice_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       managed_users: {
         Row: {
@@ -264,6 +297,7 @@ export type Database = {
           last_login: string | null
           password_hash: string
           pin: string
+          store_id: string | null
           store_name: string
           subscription_date: string
           subscription_expiry: string
@@ -276,6 +310,7 @@ export type Database = {
           last_login?: string | null
           password_hash: string
           pin: string
+          store_id?: string | null
           store_name: string
           subscription_date: string
           subscription_expiry: string
@@ -288,13 +323,22 @@ export type Database = {
           last_login?: string | null
           password_hash?: string
           pin?: string
+          store_id?: string | null
           store_name?: string
           subscription_date?: string
           subscription_expiry?: string
           updated_at?: string
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "managed_users_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -390,6 +434,7 @@ export type Database = {
           shipping_postal_code: string | null
           shipping_state: string | null
           status: string
+          store_id: string | null
           total_amount: number
           updated_at: string
         }
@@ -408,6 +453,7 @@ export type Database = {
           shipping_postal_code?: string | null
           shipping_state?: string | null
           status?: string
+          store_id?: string | null
           total_amount: number
           updated_at?: string
         }
@@ -426,6 +472,7 @@ export type Database = {
           shipping_postal_code?: string | null
           shipping_state?: string | null
           status?: string
+          store_id?: string | null
           total_amount?: number
           updated_at?: string
         }
@@ -435,6 +482,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -451,6 +505,7 @@ export type Database = {
           price: number
           sku: string | null
           stock_quantity: number
+          store_id: string | null
           updated_at: string
         }
         Insert: {
@@ -464,6 +519,7 @@ export type Database = {
           price: number
           sku?: string | null
           stock_quantity?: number
+          store_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -477,9 +533,18 @@ export type Database = {
           price?: number
           sku?: string | null
           stock_quantity?: number
+          store_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -510,6 +575,70 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      store_slug_history: {
+        Row: {
+          changed_at: string
+          id: string
+          old_slug: string
+          store_id: string
+        }
+        Insert: {
+          changed_at?: string
+          id?: string
+          old_slug: string
+          store_id: string
+        }
+        Update: {
+          changed_at?: string
+          id?: string
+          old_slug?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_slug_history_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stores: {
+        Row: {
+          created_at: string
+          id: string
+          owner_user_id: string | null
+          store_name: string
+          store_slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_user_id?: string | null
+          store_name: string
+          store_slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_user_id?: string | null
+          store_name?: string
+          store_slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "managed_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -556,12 +685,23 @@ export type Database = {
           username: string
         }[]
       }
+      create_store_for_user: {
+        Args: { p_store_name: string; p_user_id: string }
+        Returns: {
+          store_id: string
+          store_slug: string
+        }[]
+      }
       delete_managed_user: {
         Args: { p_admin_username: string; p_user_id: string }
         Returns: boolean
       }
       generate_order_number: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_store_slug: {
+        Args: { store_name_input: string }
         Returns: string
       }
       get_admin_role: {
@@ -594,6 +734,14 @@ export type Database = {
       reset_order_sequence: {
         Args: { new_start: number }
         Returns: undefined
+      }
+      resolve_store_by_slug: {
+        Args: { slug_input: string }
+        Returns: {
+          current_slug: string
+          needs_redirect: boolean
+          store_id: string
+        }[]
       }
       restore_deleted_user: {
         Args: { admin_username: string; deleted_user_id: string }
