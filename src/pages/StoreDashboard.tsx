@@ -26,11 +26,6 @@ export default function StoreDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="absolute top-4 right-4">
-        <Button variant="outline" onClick={handleSignOut}>
-          Sign Out
-        </Button>
-      </div>
       <OrderDashboard />
     </div>
   );
