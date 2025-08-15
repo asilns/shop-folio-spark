@@ -915,7 +915,7 @@ export function OrderList({ onDataChange, whatsappSettings }: OrderListProps) {
                   </TableCell>
                    <TableCell>
                      <div className="flex gap-2">
-                       {whatsappSettings?.whatsapp_enabled && (
+                       {whatsappSettings?.whatsapp_enabled ? (
                          <div onClick={(e) => e.stopPropagation()}>
                            <WhatsAppButton 
                              order={order} 
@@ -923,7 +923,7 @@ export function OrderList({ onDataChange, whatsappSettings }: OrderListProps) {
                              variant="dropdown"
                            />
                          </div>
-                       )}
+                       ) : null}
                        <Button
                          variant="outline"
                          size="sm"
