@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     console.log('Attempting authentication for:', { store, username });
 
     // Call the store authentication function
-    const { data, error } = await supabase.rpc('authenticate_store_user_with_store', {
+    const { data, error } = await supabase.rpc('authenticate_store_user_with_store_v2', {
       p_store_input: store,
       p_username: username,
       p_password: password
@@ -100,6 +100,23 @@ Deno.serve(async (req) => {
     }
 
     const userData = data[0];
+    
+    // Check if store is active
+    if (userData.store_active === false) {
+      console.log('Store is deactivated:', store);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'This store is deactivated. Please contact the administrator.',
+          store_deactivated: true
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 423 // Locked
+        }
+      );
+    }
+    
     console.log('Authentication successful for user:', userData.username);
 
     // Return success response with user data and redirect info

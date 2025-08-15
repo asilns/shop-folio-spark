@@ -67,14 +67,10 @@ export default function AdminPanelPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="stores" className="flex items-center space-x-2">
               <Shield className="h-4 w-4" />
               <span>Store Management</span>
-            </TabsTrigger>
-            <TabsTrigger value="deleted" className="flex items-center space-x-2">
-              <Trash2 className="h-4 w-4" />
-              <span>Recently Deleted</span>
             </TabsTrigger>
             <TabsTrigger value="audit" className="flex items-center space-x-2">
               <FileText className="h-4 w-4" />
@@ -102,16 +98,6 @@ export default function AdminPanelPage() {
           </TabsContent>
 
 
-          <TabsContent value="deleted" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recently Deleted Users</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DeletedUsersTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="audit" className="space-y-6">
             <Card>

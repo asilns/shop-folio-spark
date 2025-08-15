@@ -608,10 +608,61 @@ export type Database = {
           },
         ]
       }
+      store_users: {
+        Row: {
+          created_at: string
+          id: string
+          last_login: string | null
+          password_hash: string
+          pin: string | null
+          role: string
+          store_id: string
+          subscription_date: string | null
+          subscription_expiry: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_login?: string | null
+          password_hash: string
+          pin?: string | null
+          role: string
+          store_id: string
+          subscription_date?: string | null
+          subscription_expiry?: string | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_login?: string | null
+          password_hash?: string
+          pin?: string | null
+          role?: string
+          store_id?: string
+          subscription_date?: string | null
+          subscription_expiry?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_users_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           created_at: string
           id: string
+          is_active: boolean
           owner_user_id: string | null
           store_name: string
           store_slug: string
@@ -620,6 +671,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_active?: boolean
           owner_user_id?: string | null
           store_name: string
           store_slug: string
@@ -628,6 +680,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_active?: boolean
           owner_user_id?: string | null
           store_name?: string
           store_slug?: string
@@ -679,6 +732,23 @@ export type Database = {
           needs_redirect: boolean
           pin: string
           role: string
+          store_id: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          user_id: string
+          username: string
+        }[]
+      }
+      authenticate_store_user_with_store_v2: {
+        Args: { p_password: string; p_store_input: string; p_username: string }
+        Returns: {
+          current_slug: string
+          last_login: string
+          needs_redirect: boolean
+          pin: string
+          role: string
+          store_active: boolean
           store_id: string
           store_name: string
           subscription_date: string
