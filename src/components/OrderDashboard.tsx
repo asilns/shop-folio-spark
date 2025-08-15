@@ -49,7 +49,11 @@ interface WhatsAppSettings {
   date_format: string;
 }
 
-export function OrderDashboard() {
+interface OrderDashboardProps {
+  storeSlug?: string;
+}
+
+export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
   const { t } = useLanguage();
   const { user, signOut } = useStoreAuth();
   const navigate = useNavigate();

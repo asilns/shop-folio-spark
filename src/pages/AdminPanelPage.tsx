@@ -10,11 +10,12 @@ import UserManagementTab from '@/components/admin/UserManagementTab';
 import DeletedUsersTab from '@/components/admin/DeletedUsersTab';
 import AuditLogsTab from '@/components/admin/AuditLogsTab';
 import AdminSettingsTab from '@/components/admin/AdminSettingsTab';
+import { StoreManagementTab } from '@/components/admin/StoreManagementTab';
 
 export default function AdminPanelPage() {
   const { admin, signOut } = useAdminAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('stores');
 
   const handleSignOut = async () => {
     await signOut();
@@ -67,7 +68,11 @@ export default function AdminPanelPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="stores" className="flex items-center space-x-2">
+              <Shield className="h-4 w-4" />
+              <span>Store Management</span>
+            </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center space-x-2">
               <Users className="h-4 w-4" />
               <span>User Management</span>
@@ -89,6 +94,17 @@ export default function AdminPanelPage() {
               <span>Settings</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="stores" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Store Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StoreManagementTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="users" className="space-y-6">
             <Card>

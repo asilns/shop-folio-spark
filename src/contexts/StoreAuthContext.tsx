@@ -9,6 +9,7 @@ interface StoreUser {
   subscription_date: string;
   subscription_expiry: string;
   last_login: string | null;
+  store_id?: string;
 }
 
 interface StoreAuthContextType {
@@ -41,7 +42,8 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (username: string, password: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('store-auth', {
+      // Try the new store auth function first
+      const { data, error } = await supabase.functions.invoke('store-auth-with-store', {
         body: { username, password }
       });
 
@@ -51,9 +53,10 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data?.success && data?.user) {
-        setUser(data.user);
-        localStorage.setItem('store_auth_session', JSON.stringify(data.user));
-        return { error: null, user: data.user };
+        const userWithStore = { ...data.user };
+        setUser(userWithStore);
+        localStorage.setItem('store_auth_session', JSON.stringify(userWithStore));
+        return { error: null, user: userWithStore };
       } else {
         return { error: { message: 'Invalid credentials' } };
       }

@@ -41,9 +41,35 @@ export default function StoreLoginPage() {
       if (error) {
         setError('Invalid credentials');
       } else if (user) {
+        // Success - get user's store and redirect to their store dashboard
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: userData } = await supabase
+          .from('managed_users')
+          .select('store_id')
+          .eq('id', user.id)
+          .single();
+
+        if (userData?.store_id) {
+          const { data: storeData } = await supabase
+            .from('stores')
+            .select('store_slug')
+            .eq('id', userData.store_id)
+            .single();
+
+          if (storeData) {
+            toast({
+              title: 'Login successful',
+              description: 'Welcome back!',
+            });
+            navigate(`/store/${storeData.store_slug}/dashboard`);
+            return;
+          }
+        }
+
+        // Fallback to generic store page if no specific store found
         toast({
-          title: "Login successful",
-          description: `Welcome back, ${user.store_name}!`,
+          title: 'Login successful',
+          description: 'Welcome back!',
         });
         navigate('/store');
       }

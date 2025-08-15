@@ -16,6 +16,7 @@ import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import StoreLoginPage from "./pages/StoreLoginPage";
 import StoreDashboard from "./pages/StoreDashboard";
+import StoreSlugDashboard from "./pages/StoreSlugDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                   } />
                   <Route path="/store-login" element={<StoreLoginPage />} />
                   <Route path="/store" element={<StoreDashboard />} />
+                  <Route path="/store/:slug/dashboard" element={<StoreSlugDashboard />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
