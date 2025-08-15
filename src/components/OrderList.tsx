@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { DollarSign, FileText, Trash2, Filter, CalendarIcon, X, Edit3, Plus, Minus } from 'lucide-react';
+import { WhatsAppButton } from './WhatsAppButton';
 import { useToast } from '@/hooks/use-toast';
 
 interface Order {
@@ -50,6 +51,12 @@ interface OrderItem {
 
 interface OrderListProps {
   onDataChange?: () => void;
+  whatsappSettings?: {
+    whatsapp_enabled: boolean;
+    default_country_code: string;
+    whatsapp_template: string;
+    date_format: string;
+  };
 }
 
 interface OrderStatus {
@@ -61,7 +68,7 @@ interface OrderStatus {
   is_active: boolean;
 }
 
-export function OrderList({ onDataChange }: OrderListProps) {
+export function OrderList({ onDataChange, whatsappSettings }: OrderListProps) {
   const { t } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -908,6 +915,15 @@ export function OrderList({ onDataChange }: OrderListProps) {
                   </TableCell>
                    <TableCell>
                      <div className="flex gap-2">
+                       {whatsappSettings?.whatsapp_enabled && (
+                         <div onClick={(e) => e.stopPropagation()}>
+                           <WhatsAppButton 
+                             order={order} 
+                             settings={whatsappSettings}
+                             variant="dropdown"
+                           />
+                         </div>
+                       )}
                        <Button
                          variant="outline"
                          size="sm"

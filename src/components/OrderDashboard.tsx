@@ -18,6 +18,7 @@ import { CreateOrderDialog } from './CreateOrderDialog';
 import { ThemeToggle } from './theme-toggle';
 import { OrderStatusSettings } from './OrderStatusSettings';
 import { LanguageSelector } from './LanguageSelector';
+import { WhatsAppMessaging } from './WhatsAppMessaging';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,6 +42,13 @@ interface InvoiceSettings {
   logo_url?: string;
 }
 
+interface WhatsAppSettings {
+  whatsapp_enabled: boolean;
+  default_country_code: string;
+  whatsapp_template: string;
+  date_format: string;
+}
+
 export function OrderDashboard() {
   const { t } = useLanguage();
   const { profile, signOut, isAdmin } = useAuth();
@@ -58,6 +66,12 @@ export function OrderDashboard() {
     return parseInt(localStorage.getItem('starting-order-number') || '1');
   });
   const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings | null>(null);
+  const [whatsappSettings, setWhatsappSettings] = useState<WhatsAppSettings>({
+    whatsapp_enabled: false,
+    default_country_code: '+974',
+    whatsapp_template: '',
+    date_format: 'DD/MM/YYYY'
+  });
   const [logoUploading, setLogoUploading] = useState(false);
   const { toast } = useToast();
 
@@ -117,9 +131,43 @@ export function OrderDashboard() {
     }
   };
 
+  const fetchWhatsAppSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('key, value')
+        .in('key', ['whatsapp_enabled', 'default_country_code', 'whatsapp_template', 'date_format']);
+
+      if (error) throw error;
+
+      const settings: Partial<WhatsAppSettings> = {};
+      data?.forEach(setting => {
+        switch (setting.key) {
+          case 'whatsapp_enabled':
+            settings.whatsapp_enabled = setting.value === 'true';
+            break;
+          case 'default_country_code':
+            settings.default_country_code = setting.value;
+            break;
+          case 'whatsapp_template':
+            settings.whatsapp_template = setting.value;
+            break;
+          case 'date_format':
+            settings.date_format = setting.value;
+            break;
+        }
+      });
+
+      setWhatsappSettings(prev => ({ ...prev, ...settings }));
+    } catch (error: any) {
+      console.error('Error fetching WhatsApp settings:', error);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
     fetchInvoiceSettings();
+    fetchWhatsAppSettings();
     
     // Initialize order sequence if this is the first time
     const initializeSequence = async () => {
@@ -389,7 +437,7 @@ export function OrderDashboard() {
         </TabsList>
         
         <TabsContent value="orders" className="space-y-4">
-          <OrderList onDataChange={fetchStats} />
+          <OrderList onDataChange={fetchStats} whatsappSettings={whatsappSettings} />
         </TabsContent>
         
         <TabsContent value="customers" className="space-y-4">
@@ -816,6 +864,12 @@ export function OrderDashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* WhatsApp Messaging Settings */}
+          <WhatsAppMessaging 
+            settings={whatsappSettings}
+            onSettingsUpdate={setWhatsappSettings}
+          />
 
           {/* Order Status Settings */}
           <OrderStatusSettings onStatusChange={fetchStats} />
