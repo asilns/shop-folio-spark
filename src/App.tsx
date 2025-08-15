@@ -37,11 +37,6 @@ const App = () => (
                       <Index />
                     </ProtectedRoute>
                   } />
-                  <Route path="/admin" element={
-                    <ProtectedRoute adminOnly>
-                      <AdminPanel />
-                    </ProtectedRoute>
-                  } />
                   <Route path="/admin-login" element={<AdminLoginPage />} />
                   <Route path="/admin-panel" element={
                     <AdminProtectedRoute>
