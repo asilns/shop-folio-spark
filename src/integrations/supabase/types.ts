@@ -528,12 +528,12 @@ export type Database = {
       authenticate_store_user: {
         Args: { p_password: string; p_username: string }
         Returns: {
-          id: string
           last_login: string
           pin: string
           store_name: string
           subscription_date: string
           subscription_expiry: string
+          user_id: string
           username: string
         }[]
       }
@@ -567,6 +567,21 @@ export type Database = {
       get_admin_role: {
         Args: { admin_id: string }
         Returns: string
+      }
+      get_managed_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          id: string
+          last_login: string
+          password_hash: string
+          pin: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          updated_at: string
+          username: string
+        }[]
       }
       get_user_role: {
         Args: { user_uuid: string }
