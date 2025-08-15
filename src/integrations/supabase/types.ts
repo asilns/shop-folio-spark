@@ -297,6 +297,7 @@ export type Database = {
           last_login: string | null
           password_hash: string
           pin: string
+          role: string
           store_id: string | null
           store_name: string
           subscription_date: string
@@ -310,6 +311,7 @@ export type Database = {
           last_login?: string | null
           password_hash: string
           pin: string
+          role?: string
           store_id?: string | null
           store_name: string
           subscription_date: string
@@ -323,6 +325,7 @@ export type Database = {
           last_login?: string | null
           password_hash?: string
           pin?: string
+          role?: string
           store_id?: string | null
           store_name?: string
           subscription_date?: string
