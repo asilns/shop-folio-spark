@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { LogOut, Users, Settings, FileText, Trash2, Shield } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useNavigate } from 'react-router-dom';
-import UserManagementTab from '@/components/admin/UserManagementTab';
 import DeletedUsersTab from '@/components/admin/DeletedUsersTab';
 import AuditLogsTab from '@/components/admin/AuditLogsTab';
 import AdminSettingsTab from '@/components/admin/AdminSettingsTab';
@@ -68,14 +67,10 @@ export default function AdminPanelPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="stores" className="flex items-center space-x-2">
               <Shield className="h-4 w-4" />
               <span>Store Management</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span>User Management</span>
             </TabsTrigger>
             <TabsTrigger value="deleted" className="flex items-center space-x-2">
               <Trash2 className="h-4 w-4" />
@@ -106,16 +101,6 @@ export default function AdminPanelPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="users" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <UserManagementTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="deleted" className="space-y-6">
             <Card>

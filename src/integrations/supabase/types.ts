@@ -662,6 +662,24 @@ export type Database = {
         Returns: {
           last_login: string
           pin: string
+          role: string
+          store_id: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          user_id: string
+          username: string
+        }[]
+      }
+      authenticate_store_user_with_store: {
+        Args: { p_password: string; p_store_input: string; p_username: string }
+        Returns: {
+          current_slug: string
+          last_login: string
+          needs_redirect: boolean
+          pin: string
+          role: string
+          store_id: string
           store_name: string
           subscription_date: string
           subscription_expiry: string
@@ -673,6 +691,8 @@ export type Database = {
         Args: {
           p_password_hash: string
           p_pin: string
+          p_role?: string
+          p_store_id?: string
           p_store_name: string
           p_subscription_date: string
           p_subscription_expiry: string
@@ -682,6 +702,7 @@ export type Database = {
           created_at: string
           id: string
           pin: string
+          role: string
           store_name: string
           subscription_date: string
           subscription_expiry: string
@@ -758,6 +779,7 @@ export type Database = {
         Args: {
           p_password_hash?: string
           p_pin?: string
+          p_role?: string
           p_store_name?: string
           p_subscription_date?: string
           p_subscription_expiry?: string

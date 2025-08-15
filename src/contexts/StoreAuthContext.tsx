@@ -6,16 +6,17 @@ interface StoreUser {
   store_name: string;
   username: string;
   pin: string;
+  role: 'STORE_ADMIN' | 'DATA_ENTRY' | 'VIEWER';
   subscription_date: string;
   subscription_expiry: string;
   last_login: string | null;
-  store_id?: string;
+  store_id: string;
 }
 
 interface StoreAuthContextType {
   user: StoreUser | null;
   loading: boolean;
-  signIn: (username: string, password: string) => Promise<{ error: any; user?: StoreUser }>;
+  signIn: (store: string, username: string, password: string) => Promise<{ error: any; user?: StoreUser; redirectInfo?: { current_slug: string; needs_redirect: boolean } }>;
   signOut: () => void;
 }
 
@@ -40,11 +41,11 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const signIn = async (username: string, password: string) => {
+  const signIn = async (store: string, username: string, password: string) => {
     try {
-      // Try the new store auth function first
-      const { data, error } = await supabase.functions.invoke('store-auth-with-store', {
-        body: { username, password }
+      // Use the new store-aware auth function
+      const { data, error } = await supabase.functions.invoke('store-auth-with-store-input', {
+        body: { store, username, password }
       });
 
       if (error) {
@@ -56,9 +57,13 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
         const userWithStore = { ...data.user };
         setUser(userWithStore);
         localStorage.setItem('store_auth_session', JSON.stringify(userWithStore));
-        return { error: null, user: userWithStore };
+        return { 
+          error: null, 
+          user: userWithStore,
+          redirectInfo: data.store
+        };
       } else {
-        return { error: { message: 'Invalid credentials' } };
+        return { error: { message: data?.error || 'Invalid credentials' } };
       }
     } catch (error) {
       console.error('Sign in error:', error);
