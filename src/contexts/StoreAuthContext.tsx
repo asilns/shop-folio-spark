@@ -10,8 +10,8 @@ interface StoreUser {
   subscription_date: string;
   subscription_expiry: string;
   last_login: string | null;
-  store_id: string;
-  store_id_8digit: string;
+  store_id: string; // This is now the 8-digit store ID
+  store_id_8digit: string; // Keep for compatibility
 }
 
 interface StoreAuthContextType {

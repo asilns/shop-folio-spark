@@ -108,10 +108,14 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
   };
 
   const fetchInvoiceSettings = async () => {
+    if (!user?.store_id) return;
+    
     try {
+      // Filter by store_id to get store-specific settings
       const { data, error } = await supabase
         .from('invoice_settings')
         .select('*')
+        .eq('store_id', user.store_id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -120,6 +124,23 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
 
       if (data) {
         setInvoiceSettings(data);
+      } else {
+        // If no settings exist, create default ones
+        const defaultSettings = {
+          store_id: user.store_id,
+          company_name: 'Your Company',
+          currency: 'USD',
+          tax_rate: 0.0000
+        };
+        
+        const { data: newSettings, error: insertError } = await supabase
+          .from('invoice_settings')
+          .insert(defaultSettings as any)
+          .select()
+          .single();
+          
+        if (insertError) throw insertError;
+        if (newSettings) setInvoiceSettings(newSettings);
       }
     } catch (error) {
       console.error('Error fetching invoice settings:', error);
@@ -236,13 +257,13 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
    };
 
   const handleInvoiceSettingsUpdate = async (updatedSettings: Partial<InvoiceSettings>) => {
-    if (!invoiceSettings) return;
+    if (!invoiceSettings || !user?.store_id) return;
 
     try {
       const { error } = await supabase
         .from('invoice_settings')
         .update(updatedSettings)
-        .eq('id', invoiceSettings.id);
+        .eq('store_id', user.store_id);
 
       if (error) throw error;
 
