@@ -20,6 +20,7 @@ import { ThemeToggle } from './theme-toggle';
 import { OrderStatusSettings } from './OrderStatusSettings';
 import { LanguageSelector } from './LanguageSelector';
 import { WhatsAppMessaging } from './WhatsAppMessaging';
+import { InvoiceSettingsTab } from './InvoiceSettingsTab';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -118,7 +119,7 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
       const storeId = validateStoreId(user.store_id);
       // Filter by store_id to get store-specific settings
       const { data, error } = await storeFrom('invoice_settings', storeId)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         throw error;
@@ -440,6 +441,7 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
           <TabsTrigger value="orders">{t('orders')}</TabsTrigger>
           <TabsTrigger value="customers">{t('customers')}</TabsTrigger>
           <TabsTrigger value="products">{t('products')}</TabsTrigger>
+          <TabsTrigger value="invoice">{t('invoiceSettings')}</TabsTrigger>
           <TabsTrigger value="settings">{t('settings')}</TabsTrigger>
         </TabsList>
         
@@ -453,6 +455,10 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
         
         <TabsContent value="products" className="space-y-4">
           <ProductList onDataChange={fetchStats} />
+        </TabsContent>
+        
+        <TabsContent value="invoice" className="space-y-6">
+          <InvoiceSettingsTab />
         </TabsContent>
         
         <TabsContent value="settings" className="space-y-4">

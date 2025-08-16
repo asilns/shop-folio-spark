@@ -67,7 +67,7 @@ export function InvoiceSettingsTab() {
       
       // Fetch store settings
       const { data: storeData, error: storeError } = await storeFrom('store_settings', storeId)
-        .single();
+        .maybeSingle();
       
       if (storeError && storeError.code !== 'PGRST116') {
         console.error('Error fetching store settings:', storeError);
@@ -87,7 +87,7 @@ export function InvoiceSettingsTab() {
 
       // Fetch invoice settings
       const { data: invoiceData, error: invoiceError } = await storeFrom('invoice_settings', storeId)
-        .single();
+        .maybeSingle();
       
       if (invoiceError && invoiceError.code !== 'PGRST116') {
         console.error('Error fetching invoice settings:', invoiceError);
