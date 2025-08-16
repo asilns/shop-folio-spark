@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import DeletedUsersTab from '@/components/admin/DeletedUsersTab';
 import AuditLogsTab from '@/components/admin/AuditLogsTab';
 import AdminSettingsTab from '@/components/admin/AdminSettingsTab';
-import { StoreManagementTab } from '@/components/admin/StoreManagementTab';
+import StoreManagementTab from '@/components/admin/StoreManagementTab';
 
 export default function AdminPanelPage() {
   const { admin, signOut } = useAdminAuth();

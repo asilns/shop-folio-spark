@@ -41,7 +41,7 @@ export default function StoreSlugDashboard() {
         if (!authLoading && user) {
           // Verify user belongs to this store
           const { data: userData } = await supabase
-            .from('managed_users')
+            .from('store_users')
             .select('store_id')
             .eq('id', user.id)
             .single();

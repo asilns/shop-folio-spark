@@ -101,7 +101,7 @@ export default function StoreManagementTab() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setStoreUsers(data || []);
+      setStoreUsers((data || []) as StoreUser[]);
     } catch (error: any) {
       toast({
         title: 'Error',

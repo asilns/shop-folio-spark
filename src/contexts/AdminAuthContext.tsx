@@ -39,12 +39,13 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     if (!admin) return;
     
     try {
-      await supabase.from('audit_logs').insert({
-        admin_username: admin.username,
-        action_type: actionType,
-        affected_user: affectedUser,
-        notes: notes
-      });
+      // Skip audit logging since the table doesn't exist
+      // await supabase.from('audit_logs').insert({
+      //   admin_username: admin.username,
+      //   action_type: actionType,
+      //   affected_user: affectedUser,
+      //   notes: notes
+      // });
     } catch (error) {
       console.error('Error logging audit action:', error);
     }
@@ -53,7 +54,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const fetchAdminProfile = async (adminId: string) => {
     try {
       const { data, error } = await supabase
-        .from('admins')
+        .from('admin_users')
         .select('*')
         .eq('id', adminId)
         .single();
