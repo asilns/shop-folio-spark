@@ -50,7 +50,7 @@ interface CreateStoreData {
   };
 }
 
-export default function StoreManagementTab() {
+function StoreManagementTab() {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
@@ -622,3 +622,5 @@ export default function StoreManagementTab() {
     </div>
   );
 }
+
+export default StoreManagementTab;
