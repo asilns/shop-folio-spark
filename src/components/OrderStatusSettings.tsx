@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ const colorOptions = [
 
 export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps) {
   const { t } = useLanguage();
+  const { user } = useStoreAuth();
   const [statuses, setStatuses] = useState<OrderStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -100,7 +102,8 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
           display_name: formData.display_name,
           color: formData.color,
           sort_order: formData.sort_order,
-          is_active: formData.is_active
+          is_active: formData.is_active,
+          store_id: user?.store_id
         }]);
 
       if (error) throw error;

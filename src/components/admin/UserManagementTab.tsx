@@ -1,16 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import React from 'react';
 
 interface ManagedUser {
   id: string;

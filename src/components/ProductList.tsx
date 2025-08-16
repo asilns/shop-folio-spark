@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ interface ProductListProps {
 
 export function ProductList({ onDataChange }: ProductListProps) {
   const { t } = useLanguage();
+  const { user } = useStoreAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,9 +130,14 @@ export function ProductList({ onDataChange }: ProductListProps) {
         is_active: formData.is_active,
       };
 
+      const productDataWithStore = {
+        ...productData,
+        store_id: user?.store_id
+      };
+      
       const { error } = await supabase
         .from('products')
-        .insert([productData]);
+        .insert([productDataWithStore]);
 
       if (error) throw error;
 

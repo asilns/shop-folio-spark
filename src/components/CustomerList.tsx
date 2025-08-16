@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ interface CustomerListProps {
 
 export function CustomerList({ onDataChange }: CustomerListProps) {
   const { t } = useLanguage();
+  const { user } = useStoreAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
@@ -94,6 +96,7 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
           phone: formData.phone,
           address_line1: formData.address,
           city: formData.city,
+          store_id: user?.store_id
         }]);
 
       if (error) throw error;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -70,6 +71,7 @@ interface OrderStatus {
 
 export function OrderList({ onDataChange, whatsappSettings }: OrderListProps) {
   const { t } = useLanguage();
+  const { user } = useStoreAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -301,7 +303,8 @@ export function OrderList({ onDataChange, whatsappSettings }: OrderListProps) {
               product_id: item.product_id,
               quantity: item.quantity,
               unit_price: item.unit_price,
-              total_price: item.quantity * item.unit_price
+              total_price: item.quantity * item.unit_price,
+              store_id: user?.store_id
             });
           if (error) throw error;
         } else if (!item.isNew && !item.isDeleted) {

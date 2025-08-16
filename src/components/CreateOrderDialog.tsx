@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,7 @@ interface CreateOrderDialogProps {
 
 export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultCurrency = 'USD' }: CreateOrderDialogProps) {
   const { t } = useLanguage();
+  const { user } = useStoreAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [orderStatuses, setOrderStatuses] = useState<any[]>([]);
@@ -202,7 +204,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
             email: customerEmail,
             phone: newCustomer.phone,
             address_line1: newCustomer.address,
-            city: newCustomer.city
+            city: newCustomer.city,
+            store_id: user?.store_id
           })
           .select()
           .single();
@@ -221,7 +224,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
           currency: defaultCurrency,
           status: orderStatuses[0]?.name || 'pending',
           notes: notes || null,
-          order_number: ''
+          order_number: '',
+          store_id: user?.store_id
         })
         .select()
         .single();
@@ -234,7 +238,8 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        total_price: item.unit_price * item.quantity
+        total_price: item.unit_price * item.quantity,
+        store_id: user?.store_id
       }));
 
       const { error: itemsError } = await supabase
