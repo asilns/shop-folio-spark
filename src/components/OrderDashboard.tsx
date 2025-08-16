@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { storeFrom, storeInsert, storeUpdate, validateStoreId } from '@/lib/storeScope';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,11 +86,14 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
   };
 
   const fetchStats = async () => {
+    if (!user?.store_id) return;
+    
     try {
+      const storeId = validateStoreId(user.store_id);
       const [ordersResult, pendingOrdersResult, cancelledOrdersResult] = await Promise.all([
-        supabase.from('orders').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
+        storeFrom('orders', storeId).select('*', { count: 'exact', head: true }),
+        storeFrom('orders', storeId).select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        storeFrom('orders', storeId).select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
       ]);
 
       setStats({
@@ -111,11 +115,9 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
     if (!user?.store_id) return;
     
     try {
+      const storeId = validateStoreId(user.store_id);
       // Filter by store_id to get store-specific settings
-      const { data, error } = await supabase
-        .from('invoice_settings')
-        .select('*')
-        .eq('store_id', user.store_id)
+      const { data, error } = await storeFrom('invoice_settings', storeId)
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -127,19 +129,14 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
       } else {
         // If no settings exist, create default ones
         const defaultSettings = {
-          store_id: user.store_id,
-          company_name: 'Your Company',
           currency: 'USD',
-          tax_rate: 0.0000
+          tax_rate: 0.0000,
+          company_name: 'Your Company'
         };
         
-        const { data: newSettings, error: insertError } = await supabase
-          .from('invoice_settings')
-          .insert(defaultSettings as any)
-          .select()
-          .single();
+        const { data: newSettings, error: createError } = await storeInsert('invoice_settings', storeId, defaultSettings);
           
-        if (insertError) throw insertError;
+        if (createError) throw createError;
         if (newSettings) setInvoiceSettings(newSettings);
       }
     } catch (error) {
@@ -153,9 +150,11 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
   };
 
   const fetchWhatsAppSettings = async () => {
+    if (!user?.store_id) return;
+    
     try {
-      const { data, error } = await supabase
-        .from('app_settings')
+      const storeId = validateStoreId(user.store_id);
+      const { data, error } = await storeFrom('app_settings', storeId)
         .select('key, value')
         .in('key', ['whatsapp_enabled', 'default_country_code', 'whatsapp_template', 'date_format']);
 
@@ -260,10 +259,8 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
     if (!invoiceSettings || !user?.store_id) return;
 
     try {
-      const { error } = await supabase
-        .from('invoice_settings')
-        .update(updatedSettings)
-        .eq('store_id', user.store_id);
+      const storeId = validateStoreId(user.store_id);
+      const { error } = await storeUpdate('invoice_settings', storeId, 'id', invoiceSettings.id, updatedSettings);
 
       if (error) throw error;
 
