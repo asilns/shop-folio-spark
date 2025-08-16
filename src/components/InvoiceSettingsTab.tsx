@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { storeFrom, storeInsert, storeUpdate, validateStoreId } from '@/lib/storeScope';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeStoreFn } from '@/lib/invokeStoreFn';
 import { currencies, getCurrencyOptions } from '@/lib/currencies';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,21 +66,28 @@ export function InvoiceSettingsTab() {
     try {
       const storeId = validateStoreId(user.store_id);
       
-      // Get store token from localStorage
-      const storeToken = localStorage.getItem('store_token');
-      if (!storeToken) {
-        throw new Error('No store token found');
-      }
-      
       // Fetch store settings via Edge Function
-      const { data: storeData, error: storeError } = await supabase.functions.invoke('store-settings-get', {
-        headers: {
-          'x-app-token': storeToken
-        }
-      });
+      const { data: storeData, error: storeError } = await invokeStoreFn('store-settings-get');
 
       if (storeError) {
         console.error('Error fetching store settings:', storeError);
+        
+        // Handle token errors
+        if (storeError.message?.includes('invalid_app_token') || 
+            storeError.message?.includes('missing_app_token')) {
+          toast({
+            title: 'Session Expired',
+            description: 'Please sign in again',
+            variant: 'destructive',
+          });
+          // Clear tokens and redirect
+          localStorage.removeItem("store_app_token");
+          localStorage.removeItem("store_id");  
+          localStorage.removeItem("store_slug");
+          window.location.href = '/store-login';
+          return;
+        }
+        
         throw storeError;
       }
 
@@ -126,22 +133,30 @@ export function InvoiceSettingsTab() {
     try {
       setSaving(true);
       
-      // Get store token from localStorage
-      const storeToken = localStorage.getItem('store_token');
-      if (!storeToken) {
-        throw new Error('No store token found');
-      }
-      
       // Update store settings via Edge Function
-      const { data, error } = await supabase.functions.invoke('store-settings-update', {
-        headers: {
-          'x-app-token': storeToken
-        },
+      const { data, error } = await invokeStoreFn('store-settings-update', {
         body: updates
       });
 
       if (error) {
         console.error('Error updating store settings:', error);
+        
+        // Handle token errors
+        if (error.message?.includes('invalid_app_token') || 
+            error.message?.includes('missing_app_token')) {
+          toast({
+            title: 'Session Expired',
+            description: 'Please sign in again',
+            variant: 'destructive',
+          });
+          // Clear tokens and redirect
+          localStorage.removeItem("store_app_token");
+          localStorage.removeItem("store_id");
+          localStorage.removeItem("store_slug");
+          window.location.href = '/store-login';
+          return;
+        }
+        
         throw error;
       }
 

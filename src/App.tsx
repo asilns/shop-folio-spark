@@ -6,12 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
+import { StoreSessionProvider } from "@/contexts/StoreSessionContext";
 import { StoreAuthProvider } from "@/contexts/StoreAuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminProtectedRoute from "@/components/AdminProtectedRoute";
-import Index from "./pages/Index";
+import { ProtectedStoreRoute } from "@/components/ProtectedStoreRoute";
 
-import AdminPanel from "./pages/AdminPanel";
+import Index from "./pages/Index";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
 import StoreLoginPage from "./pages/StoreLoginPage";
@@ -26,7 +27,8 @@ const App = () => (
     <LanguageProvider>
       <AuthProvider>
         <AdminAuthProvider>
-          <StoreAuthProvider>
+          <StoreSessionProvider>
+            <StoreAuthProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -45,14 +47,23 @@ const App = () => (
                     </AdminProtectedRoute>
                   } />
                   <Route path="/store-login" element={<StoreLoginPage />} />
-                  <Route path="/store" element={<StoreDashboard />} />
-                  <Route path="/store/:slug/dashboard" element={<StoreSlugDashboard />} />
+                  <Route path="/store" element={
+                    <ProtectedStoreRoute>
+                      <StoreDashboard />
+                    </ProtectedStoreRoute>
+                  } />
+                  <Route path="/store/:slug/dashboard" element={
+                    <ProtectedStoreRoute>
+                      <StoreSlugDashboard />
+                    </ProtectedStoreRoute>
+                  } />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
-          </StoreAuthProvider>
+            </StoreAuthProvider>
+          </StoreSessionProvider>
         </AdminAuthProvider>
       </AuthProvider>
     </LanguageProvider>

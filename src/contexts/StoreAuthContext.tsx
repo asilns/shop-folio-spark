@@ -69,6 +69,14 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
         };
         setUser(userWithStore);
         localStorage.setItem('store_auth_session', JSON.stringify(userWithStore));
+        
+        // NEW: Persist store session data for token-based access
+        if (data.token) {
+          localStorage.setItem("store_app_token", data.token);
+          localStorage.setItem("store_id", data.user.store_id_8digit);
+          localStorage.setItem("store_slug", data.store.current_slug);
+        }
+        
         return { 
           error: null, 
           user: userWithStore,
@@ -90,6 +98,10 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('store_auth_session');
+    // Clear new session tokens
+    localStorage.removeItem("store_app_token");
+    localStorage.removeItem("store_id");
+    localStorage.removeItem("store_slug");
   };
 
   const value = {
