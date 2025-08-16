@@ -72,7 +72,15 @@ export type Database = {
           updated_at?: string
           value?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
       }
       categories: {
         Row: {
@@ -147,7 +155,15 @@ export type Database = {
           store_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
       }
       invoice_settings: {
         Row: {
@@ -201,7 +217,15 @@ export type Database = {
           tax_rate?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invoice_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -249,6 +273,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
         ]
       }
       order_statuses: {
@@ -285,7 +316,15 @@ export type Database = {
           sort_order?: number | null
           store_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "order_statuses_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -353,6 +392,13 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
         ]
       }
       payments: {
@@ -389,7 +435,15 @@ export type Database = {
           store_id?: string
           transaction_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -434,7 +488,15 @@ export type Database = {
           store_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
       }
       store_slug_history: {
         Row: {

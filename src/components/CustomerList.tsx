@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { storeFrom, storeInsert, storeDelete, validateStoreId } from '@/lib/storeScope';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,9 +47,8 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
 
   const fetchCustomers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
+      const storeId = validateStoreId(user?.store_id);
+      const { data, error } = await storeFrom('customers', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -87,17 +87,15 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
       // Use provided email or null if not provided
       const customerEmail = formData.email.trim() || null;
 
-      const { error } = await supabase
-        .from('customers')
-        .insert([{
-          first_name: firstName,
-          last_name: lastName,
-          email: customerEmail,
-          phone: formData.phone,
-          address_line1: formData.address,
-          city: formData.city,
-          store_id: user?.store_id
-        } as any]);
+      const storeId = validateStoreId(user?.store_id);
+      const { error } = await storeInsert('customers', storeId, {
+        first_name: firstName,
+        last_name: lastName,
+        email: customerEmail,
+        phone: formData.phone,
+        address_line1: formData.address,
+        city: formData.city
+      });
 
       if (error) throw error;
 
@@ -129,8 +127,8 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
   const deleteCustomer = async (customerId: string, customerName: string) => {
     try {
       // Check if customer has any orders
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
+      const storeId = validateStoreId(user?.store_id);
+      const { data: orders, error: ordersError } = await storeFrom('orders', storeId)
         .select('id')
         .eq('customer_id', customerId)
         .limit(1);
@@ -147,10 +145,7 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
       }
 
       // Delete the customer
-      const { error } = await supabase
-        .from('customers')
-        .delete()
-        .eq('id', customerId);
+      const { error } = await storeDelete('customers', storeId, 'id', customerId);
 
       if (error) throw error;
 

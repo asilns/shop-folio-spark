@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { storeFrom, storeInsert, storeUpdate, storeDelete, validateStoreId } from '@/lib/storeScope';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,9 +85,8 @@ export function ProductList({ onDataChange }: ProductListProps) {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
+      const storeId = validateStoreId(user?.store_id);
+      const { data, error } = await storeFrom('products', storeId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -130,14 +130,8 @@ export function ProductList({ onDataChange }: ProductListProps) {
         is_active: formData.is_active,
       };
 
-      const productDataWithStore = {
-        ...productData,
-        store_id: user?.store_id
-      };
-      
-      const { error } = await supabase
-        .from('products')
-        .insert([productDataWithStore as any]);
+      const storeId = validateStoreId(user?.store_id);
+      const { error } = await storeInsert('products', storeId, productData);
 
       if (error) throw error;
 
