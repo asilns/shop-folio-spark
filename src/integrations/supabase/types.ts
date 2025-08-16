@@ -498,6 +498,41 @@ export type Database = {
           },
         ]
       }
+      store_settings: {
+        Row: {
+          created_at: string
+          default_currency: string
+          language: string
+          logo_url: string | null
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_currency?: string
+          language?: string
+          logo_url?: string | null
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_currency?: string
+          language?: string
+          logo_url?: string | null
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["store_id_8digit"]
+          },
+        ]
+      }
       store_slug_history: {
         Row: {
           changed_at: string
@@ -680,6 +715,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_or_init_store_settings: {
+        Args: { p_store_id: string }
+        Returns: {
+          created_at: string
+          default_currency: string
+          language: string
+          logo_url: string | null
+          store_id: string
+          updated_at: string
+        }
+      }
       hash_password: {
         Args: { password: string }
         Returns: string
@@ -699,6 +745,10 @@ export type Database = {
           needs_redirect: boolean
           store_id: string
         }[]
+      }
+      seed_default_order_statuses: {
+        Args: { p_store_id: string }
+        Returns: undefined
       }
       seed_default_settings_for_store: {
         Args: { p_store_id: string }

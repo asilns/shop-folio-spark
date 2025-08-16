@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStoreAuth } from '@/contexts/StoreAuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { storeFrom, storeInsert, storeUpdate, storeDelete, validateStoreId } from '@/lib/storeScope';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,9 +59,11 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
   const { toast } = useToast();
 
   const fetchOrderStatuses = async () => {
+    if (!user?.store_id) return;
+    
     try {
-      const { data, error } = await supabase
-        .from('order_statuses')
+      const storeId = validateStoreId(user.store_id);
+      const { data, error } = await storeFrom('order_statuses', storeId)
         .select('*')
         .order('sort_order');
 
@@ -94,17 +96,17 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
   };
 
   const handleCreate = async () => {
+    if (!user?.store_id || !formData.display_name.trim()) return;
+
     try {
-      const { error } = await supabase
-        .from('order_statuses')
-        .insert([{
-          name: formData.name.toLowerCase().replace(/\s+/g, '_'),
-          display_name: formData.display_name,
-          color: formData.color,
-          sort_order: formData.sort_order,
-          is_active: formData.is_active,
-          store_id: user?.store_id
-        } as any]);
+      const storeId = validateStoreId(user.store_id);
+      const { error } = await storeInsert('order_statuses', storeId, {
+        name: formData.name.toLowerCase().replace(/\s+/g, '_'),
+        display_name: formData.display_name,
+        color: formData.color,
+        sort_order: formData.sort_order,
+        is_active: formData.is_active
+      });
 
       if (error) throw error;
 
@@ -128,18 +130,16 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
   };
 
   const handleEdit = async () => {
-    if (!editingStatus) return;
+    if (!editingStatus || !user?.store_id) return;
 
     try {
-      const { error } = await supabase
-        .from('order_statuses')
-        .update({
-          display_name: formData.display_name,
-          color: formData.color,
-          sort_order: formData.sort_order,
-          is_active: formData.is_active
-        })
-        .eq('id', editingStatus.id);
+      const storeId = validateStoreId(user.store_id);
+      const { error } = await storeUpdate('order_statuses', storeId, 'id', editingStatus.id, {
+        display_name: formData.display_name,
+        color: formData.color,
+        sort_order: formData.sort_order,
+        is_active: formData.is_active
+      });
 
       if (error) throw error;
 
@@ -164,11 +164,11 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
   };
 
   const handleDelete = async (status: OrderStatus) => {
+    if (!user?.store_id) return;
+
     try {
-      const { error } = await supabase
-        .from('order_statuses')
-        .delete()
-        .eq('id', status.id);
+      const storeId = validateStoreId(user.store_id);
+      const { error } = await storeDelete('order_statuses', storeId, 'id', status.id);
 
       if (error) throw error;
 
@@ -190,11 +190,11 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
   };
 
   const handleToggleActive = async (status: OrderStatus) => {
+    if (!user?.store_id) return;
+
     try {
-      const { error } = await supabase
-        .from('order_statuses')
-        .update({ is_active: !status.is_active })
-        .eq('id', status.id);
+      const storeId = validateStoreId(user.store_id);
+      const { error } = await storeUpdate('order_statuses', storeId, 'id', status.id, { is_active: !status.is_active });
 
       if (error) throw error;
 
