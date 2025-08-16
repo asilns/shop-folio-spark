@@ -55,7 +55,12 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data?.success && data?.user) {
-        const userWithStore = { ...data.user };
+        // Map the user data to use 8-digit store_id consistently
+        const userWithStore = { 
+          ...data.user,
+          store_id: data.user.store_id_8digit, // Use 8-digit store ID as primary store_id
+          store_id_8digit: data.user.store_id_8digit // Keep for compatibility
+        };
         setUser(userWithStore);
         localStorage.setItem('store_auth_session', JSON.stringify(userWithStore));
         return { 
