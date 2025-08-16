@@ -52,7 +52,7 @@ export default function StoreSlugDashboard() {
               const { data: userStore } = await supabase
                 .from('stores')
                 .select('store_slug')
-                .eq('id', userData.store_id)
+                .eq('store_id', userData.store_id)
                 .single();
               
               if (userStore) {
