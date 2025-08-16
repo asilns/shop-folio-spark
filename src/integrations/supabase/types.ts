@@ -732,6 +732,14 @@ export type Database = {
         Args: { new_start: number }
         Returns: undefined
       }
+      resolve_store_by_slug: {
+        Args: { slug_input: string }
+        Returns: {
+          current_slug: string
+          needs_redirect: boolean
+          store_id: string
+        }[]
+      }
       seed_default_settings_for_store: {
         Args: { p_store_id: string }
         Returns: undefined
