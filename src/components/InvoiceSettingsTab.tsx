@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useStoreAuth } from '@/contexts/StoreAuthContext';
 import { storeFrom, storeInsert, storeUpdate, validateStoreId } from '@/lib/storeScope';
+import { supabase } from '@/integrations/supabase/client';
 import { currencies, getCurrencyOptions } from '@/lib/currencies';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,25 +66,27 @@ export function InvoiceSettingsTab() {
     try {
       const storeId = validateStoreId(user.store_id);
       
+      // Get store token from localStorage
+      const storeToken = localStorage.getItem('store_token');
+      if (!storeToken) {
+        throw new Error('No store token found');
+      }
+      
       // Fetch store settings via Edge Function
-      const response = await fetch(`https://mxecbagyjxpuhjjilzlc.supabase.co/functions/v1/store-settings-get`, {
-        method: 'POST',
+      const { data: storeData, error: storeError } = await supabase.functions.invoke('store-settings-get', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('store_token')}`,
-          'Content-Type': 'application/json'
+          'x-app-token': storeToken
         }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (storeError) {
+        console.error('Error fetching store settings:', storeError);
+        throw storeError;
       }
 
-      const storeData = await response.json();
-      if (storeData.error) {
-        throw new Error(storeData.error);
+      if (storeData) {
+        setStoreSettings(storeData);
       }
-      
-      setStoreSettings(storeData);
 
       // Fetch invoice settings
       const { data: invoiceData, error: invoiceError } = await storeFrom('invoice_settings', storeId)
@@ -123,30 +126,32 @@ export function InvoiceSettingsTab() {
     try {
       setSaving(true);
       
+      // Get store token from localStorage
+      const storeToken = localStorage.getItem('store_token');
+      if (!storeToken) {
+        throw new Error('No store token found');
+      }
+      
       // Update store settings via Edge Function
-      const response = await fetch(`https://mxecbagyjxpuhjjilzlc.supabase.co/functions/v1/store-settings-update`, {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('store-settings-update', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('store_token')}`,
-          'Content-Type': 'application/json'
+          'x-app-token': storeToken
         },
-        body: JSON.stringify(updates)
+        body: updates
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        console.error('Error updating store settings:', error);
+        throw error;
       }
 
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
+      if (data) {
+        setStoreSettings({ ...storeSettings, ...data });
+        toast({
+          title: 'Success',
+          description: 'Settings updated successfully',
+        });
       }
-
-      setStoreSettings({ ...storeSettings, ...data });
-      toast({
-        title: 'Success',
-        description: 'Settings updated successfully',
-      });
     } catch (error) {
       console.error('Error updating store settings:', error);
       toast({
