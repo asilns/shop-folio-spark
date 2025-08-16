@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Combobox } from '@/components/ui/combobox';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { OrderStatusManagement } from '@/components/OrderStatusManagement';
+import { WhatsAppMessaging } from '@/components/WhatsAppMessaging';
 import { useToast } from '@/hooks/use-toast';
 import { Settings, FileImage, Upload, X } from 'lucide-react';
 
@@ -41,6 +42,13 @@ interface InvoiceSettings {
   snapchat_account?: string;
 }
 
+interface WhatsAppSettings {
+  whatsapp_enabled: boolean;
+  default_country_code: string;
+  whatsapp_template: string;
+  date_format: string;
+}
+
 export function InvoiceSettingsTab() {
   const { t, language, setLanguage } = useLanguage();
   const { user } = useStoreAuth();
@@ -48,6 +56,12 @@ export function InvoiceSettingsTab() {
   
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
   const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings | null>(null);
+  const [whatsappSettings, setWhatsappSettings] = useState<WhatsAppSettings>({
+    whatsapp_enabled: false,
+    default_country_code: '+1',
+    whatsapp_template: 'Hello {{name}}, your order #{{order_number}} is {{order_status}}. Total: {{total}}. Date: {{date}}. Thank you!',
+    date_format: 'MM/DD/YYYY'
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -241,6 +255,15 @@ export function InvoiceSettingsTab() {
 
   const handleLogoRemove = async () => {
     await handleStoreSettingsUpdate({ logo_url: null });
+  };
+
+  const handleWhatsAppSettingsUpdate = (newSettings: WhatsAppSettings) => {
+    setWhatsappSettings(newSettings);
+    // Save WhatsApp settings to your backend here
+    toast({
+      title: 'WhatsApp Settings Updated',
+      description: 'Your WhatsApp notification settings have been saved.',
+    });
   };
 
   if (loading) {
@@ -476,6 +499,12 @@ export function InvoiceSettingsTab() {
           </CardContent>
         </Card>
       )}
+
+      {/* WhatsApp Settings Section */}
+      <WhatsAppMessaging 
+        settings={whatsappSettings}
+        onSettingsUpdate={handleWhatsAppSettingsUpdate}
+      />
 
       {/* Save Button */}
       <div className="flex justify-end">
