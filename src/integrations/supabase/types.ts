@@ -51,7 +51,7 @@ export type Database = {
           id: string
           key: string
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           updated_at: string
           value: string | null
         }
@@ -61,7 +61,7 @@ export type Database = {
           id?: string
           key: string
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           updated_at?: string
           value?: string | null
         }
@@ -71,7 +71,7 @@ export type Database = {
           id?: string
           key?: string
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           updated_at?: string
           value?: string | null
         }
@@ -124,7 +124,7 @@ export type Database = {
           postal_code: string | null
           state: string | null
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           updated_at: string
         }
         Insert: {
@@ -141,7 +141,7 @@ export type Database = {
           postal_code?: string | null
           state?: string | null
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           updated_at?: string
         }
         Update: {
@@ -158,7 +158,7 @@ export type Database = {
           postal_code?: string | null
           state?: string | null
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           updated_at?: string
         }
         Relationships: [
@@ -186,7 +186,7 @@ export type Database = {
           phone_number: string | null
           snapchat_account: string | null
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           tax_rate: number | null
           updated_at: string
         }
@@ -204,7 +204,7 @@ export type Database = {
           phone_number?: string | null
           snapchat_account?: string | null
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           tax_rate?: number | null
           updated_at?: string
         }
@@ -222,7 +222,7 @@ export type Database = {
           phone_number?: string | null
           snapchat_account?: string | null
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           tax_rate?: number | null
           updated_at?: string
         }
@@ -244,7 +244,7 @@ export type Database = {
           product_id: string
           quantity: number
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           total_price: number
           unit_price: number
         }
@@ -255,7 +255,7 @@ export type Database = {
           product_id: string
           quantity: number
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           total_price: number
           unit_price: number
         }
@@ -266,7 +266,7 @@ export type Database = {
           product_id?: string
           quantity?: number
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           total_price?: number
           unit_price?: number
         }
@@ -305,7 +305,7 @@ export type Database = {
           name: string
           sort_order: number | null
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
         }
         Insert: {
           color?: string | null
@@ -317,7 +317,7 @@ export type Database = {
           name: string
           sort_order?: number | null
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
         }
         Update: {
           color?: string | null
@@ -329,7 +329,7 @@ export type Database = {
           name?: string
           sort_order?: number | null
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
         }
         Relationships: [
           {
@@ -358,7 +358,7 @@ export type Database = {
           shipping_state: string | null
           status: string
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           total_amount: number
           updated_at: string
         }
@@ -378,7 +378,7 @@ export type Database = {
           shipping_state?: string | null
           status?: string
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           total_amount: number
           updated_at?: string
         }
@@ -398,7 +398,7 @@ export type Database = {
           shipping_state?: string | null
           status?: string
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           total_amount?: number
           updated_at?: string
         }
@@ -429,7 +429,7 @@ export type Database = {
           payment_method: string
           payment_status: string | null
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           transaction_id: string | null
         }
         Insert: {
@@ -441,7 +441,7 @@ export type Database = {
           payment_method: string
           payment_status?: string | null
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           transaction_id?: string | null
         }
         Update: {
@@ -453,7 +453,7 @@ export type Database = {
           payment_method?: string
           payment_status?: string | null
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           transaction_id?: string | null
         }
         Relationships: [
@@ -479,7 +479,7 @@ export type Database = {
           sku: string | null
           stock_quantity: number
           store_id: string
-          store_id_8digit: string | null
+          store_id_new: string
           updated_at: string
         }
         Insert: {
@@ -494,7 +494,7 @@ export type Database = {
           sku?: string | null
           stock_quantity?: number
           store_id: string
-          store_id_8digit?: string | null
+          store_id_new: string
           updated_at?: string
         }
         Update: {
@@ -509,7 +509,7 @@ export type Database = {
           sku?: string | null
           stock_quantity?: number
           store_id?: string
-          store_id_8digit?: string | null
+          store_id_new?: string
           updated_at?: string
         }
         Relationships: [
