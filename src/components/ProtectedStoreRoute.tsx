@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
 interface ProtectedStoreRouteProps {
   children: JSX.Element;
 }
 
 export function ProtectedStoreRoute({ children }: ProtectedStoreRouteProps) {
-  const token = localStorage.getItem("store_app_token");
+  const [hasToken, setHasToken] = useState<boolean | null>(null);
   
-  if (!token) {
+  useEffect(() => {
+    const token = localStorage.getItem("store_app_token");
+    setHasToken(!!token);
+  }, []);
+  
+  // Show loading state while checking token
+  if (hasToken === null) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!hasToken) {
     return <Navigate to="/store-login" replace />;
   }
   
