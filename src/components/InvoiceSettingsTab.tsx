@@ -65,25 +65,25 @@ export function InvoiceSettingsTab() {
     try {
       const storeId = validateStoreId(user.store_id);
       
-      // Fetch store settings
-      const { data: storeData, error: storeError } = await storeFrom('store_settings', storeId)
-        .maybeSingle();
-      
-      if (storeError && storeError.code !== 'PGRST116') {
-        console.error('Error fetching store settings:', storeError);
-      } else if (storeData) {
-        setStoreSettings(storeData);
-      } else {
-        // Create default store settings
-        const defaultStoreSettings = {
-          language: 'en',
-          default_currency: 'USD'
-        };
-        
-        const { data: newStoreSettings, error: createError } = await storeInsert('store_settings', storeId, defaultStoreSettings);
-        if (createError) throw createError;
-        if (newStoreSettings) setStoreSettings(newStoreSettings);
+      // Fetch store settings via Edge Function
+      const response = await fetch(`https://mxecbagyjxpuhjjilzlc.supabase.co/functions/v1/store-settings-get`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('store_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const storeData = await response.json();
+      if (storeData.error) {
+        throw new Error(storeData.error);
+      }
+      
+      setStoreSettings(storeData);
 
       // Fetch invoice settings
       const { data: invoiceData, error: invoiceError } = await storeFrom('invoice_settings', storeId)
@@ -122,18 +122,31 @@ export function InvoiceSettingsTab() {
 
     try {
       setSaving(true);
-      const storeId = validateStoreId(user.store_id);
       
-      const { data, error } = await storeUpdate('store_settings', storeId, 'store_id', storeId, updates);
-      if (error) throw error;
+      // Update store settings via Edge Function
+      const response = await fetch(`https://mxecbagyjxpuhjjilzlc.supabase.co/functions/v1/store-settings-update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('store_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      });
 
-      if (data) {
-        setStoreSettings({ ...storeSettings, ...data });
-        toast({
-          title: 'Success',
-          description: 'Settings updated successfully',
-        });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setStoreSettings({ ...storeSettings, ...data });
+      toast({
+        title: 'Success',
+        description: 'Settings updated successfully',
+      });
     } catch (error) {
       console.error('Error updating store settings:', error);
       toast({
