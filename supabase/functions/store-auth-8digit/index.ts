@@ -13,8 +13,23 @@ interface StoreAuthRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('🚀 FUNCTION CALLED - Method:', req.method);
+  console.log('🔑 AUTH HEADER:', req.headers.get('Authorization') ? 'Present' : 'Missing');
+  
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+  
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { 
+        status: 405, 
+        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      }
+    );
   }
 
   try {
@@ -39,6 +54,20 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ MISSING ENV VARS:', { supabaseUrl: !!supabaseUrl, serviceKey: !!supabaseServiceKey });
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Server configuration error' 
+        }),
+        { 
+          status: 500, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      );
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Use the correct authentication function
@@ -51,8 +80,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('🔍 AUTH RESULT:', { success: authResult && authResult.length > 0, authError });
 
-    if (authError || !authResult || authResult.length === 0) {
+    if (authError) {
       console.log('❌ AUTHENTICATION FAILED:', authError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid credentials',
+          details: authError.message 
+        }),
+        { 
+          status: 401, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      );
+    }
+
+    if (!authResult || authResult.length === 0) {
+      console.log('❌ NO AUTH RESULT');
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -66,6 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const userAuth = authResult[0];
+    console.log('🔍 USER AUTH RESULT:', { error_code: userAuth.error_code, store_name: userAuth.store_name });
 
     // Check for specific error conditions
     if (userAuth.error_code === 'STORE_DEACTIVATED') {
@@ -147,7 +192,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Authentication failed' 
+        error: 'Authentication failed',
+        details: `Unexpected error code: ${userAuth.error_code}`
       }),
       { 
         status: 500, 
@@ -160,7 +206,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: 'Internal server error' 
+        error: 'Internal server error',
+        details: error.message 
       }),
       { 
         status: 500, 
