@@ -379,17 +379,14 @@ export function OrderDashboard({ storeSlug }: OrderDashboardProps = {}) {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">{t('dashboard')}</h1>
-          <p className="text-muted-foreground">{t('viewAndManageOrders')}</p>
+      <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('dashboard')} — {t('viewAndManageOrders')}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground truncate">
+            {t('welcomeBack')}, {user?.store_name || user?.username}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 mr-4">
-            <span className="text-sm text-muted-foreground">
-              {t('welcomeBack')}, {user?.store_name || user?.username}
-            </span>
-          </div>
+        <div className="flex items-center gap-2 flex-wrap">
           <ThemeToggle />
           <Button onClick={() => setShowCreateOrder(true)} className="gap-2">
             <PlusCircle className="w-4 h-4" />

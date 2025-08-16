@@ -477,7 +477,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <PlusCircle className="w-4 h-4" />
-                  Add Category
+                  <span className="hidden sm:inline">Add Category</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -518,7 +518,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <PlusCircle className="w-4 h-4" />
-                Add Product
+                <span className="hidden sm:inline">Add Product</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
