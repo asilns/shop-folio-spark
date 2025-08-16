@@ -667,6 +667,7 @@ export type Database = {
           role: string
           store_active: boolean
           store_id: string
+          store_id_8digit: string
           store_name: string
           subscription_date: string
           subscription_expiry: string
