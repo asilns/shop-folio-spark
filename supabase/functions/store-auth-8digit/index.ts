@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import { SignJWT } from "https://deno.land/x/jose@v4.14.4/index.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -152,13 +153,39 @@ const handler = async (req: Request): Promise<Response> => {
         redirectUrl: `/store/${userAuth.current_slug}`
       });
 
-      // Create session token with 8-digit store ID
-      const sessionToken = btoa(`${userAuth.user_id}:${userAuth.store_id_8digit}:${Date.now()}:${Math.random()}`);
-      const expiresAt = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+      // Create JWT token with store information
+      const STORE_JWT_SECRET = Deno.env.get('STORE_JWT_SECRET')!;
+      if (!STORE_JWT_SECRET) {
+        console.error('❌ MISSING STORE_JWT_SECRET');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'Server configuration error' 
+          }),
+          { 
+            status: 500, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+
+      // Create JWT token
+      const secret = new TextEncoder().encode(STORE_JWT_SECRET);
+      const token = await new SignJWT({
+        user_id: userAuth.user_id,
+        store_id: userAuth.store_id_8digit,
+        username: userAuth.username,
+        role: userAuth.role
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('24h')
+        .sign(secret);
 
       return new Response(
         JSON.stringify({ 
           success: true, 
+          token: token, // Return token at top level
           user: {
             id: userAuth.user_id,
             store_name: userAuth.store_name,
@@ -175,10 +202,6 @@ const handler = async (req: Request): Promise<Response> => {
             current_slug: userAuth.current_slug,
             needs_redirect: userAuth.needs_redirect,
             store_id_8digit: userAuth.store_id_8digit
-          },
-          session: {
-            token: sessionToken,
-            expiresAt: expiresAt
           }
         }),
         { 
