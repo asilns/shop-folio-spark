@@ -41,9 +41,9 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Use the updated authentication function with 8-digit ID support
+    // Use the correct authentication function
     const { data: authResult, error: authError } = await supabase
-      .rpc('authenticate_store_user_with_8digit_id', {
+      .rpc('authenticate_store_user_with_store_v2', {
         p_store_input: store,
         p_username: username,
         p_password: password

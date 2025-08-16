@@ -44,7 +44,7 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (store: string, username: string, password: string) => {
     try {
-      // Use the new 8-digit store ID auth function
+      // Use the store auth function
       const { data, error } = await supabase.functions.invoke('store-auth-8digit', {
         body: { store, username, password }
       });
