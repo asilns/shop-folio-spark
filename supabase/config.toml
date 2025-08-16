@@ -1,4 +1,7 @@
 project_id = "mxecbagyjxpuhjjilzlc"
 
+[functions.store-auth-8digit]
+verify_jwt = false
+
 [functions.generate-invoice]
 verify_jwt = false
