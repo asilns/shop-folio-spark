@@ -97,7 +97,7 @@ export function CustomerList({ onDataChange }: CustomerListProps) {
           address_line1: formData.address,
           city: formData.city,
           store_id: user?.store_id
-        }]);
+        } as any]);
 
       if (error) throw error;
 

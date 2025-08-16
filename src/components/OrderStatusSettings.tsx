@@ -104,7 +104,7 @@ export function OrderStatusSettings({ onStatusChange }: OrderStatusSettingsProps
           sort_order: formData.sort_order,
           is_active: formData.is_active,
           store_id: user?.store_id
-        }]);
+        } as any]);
 
       if (error) throw error;
 

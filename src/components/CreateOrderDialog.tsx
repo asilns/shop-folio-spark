@@ -206,7 +206,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
             address_line1: newCustomer.address,
             city: newCustomer.city,
             store_id: user?.store_id
-          })
+          } as any)
           .select()
           .single();
 
@@ -226,7 +226,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
           notes: notes || null,
           order_number: '',
           store_id: user?.store_id
-        })
+        } as any)
         .select()
         .single();
 
@@ -244,7 +244,7 @@ export function CreateOrderDialog({ open, onOpenChange, onOrderCreated, defaultC
 
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(orderItemsData);
+        .insert(orderItemsData as any);
 
       if (itemsError) throw itemsError;
 

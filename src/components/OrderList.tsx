@@ -305,7 +305,7 @@ export function OrderList({ onDataChange, whatsappSettings }: OrderListProps) {
               unit_price: item.unit_price,
               total_price: item.quantity * item.unit_price,
               store_id: user?.store_id
-            });
+            } as any);
           if (error) throw error;
         } else if (!item.isNew && !item.isDeleted) {
           // Update existing item

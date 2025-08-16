@@ -137,7 +137,7 @@ export function ProductList({ onDataChange }: ProductListProps) {
       
       const { error } = await supabase
         .from('products')
-        .insert([productDataWithStore]);
+        .insert([productDataWithStore as any]);
 
       if (error) throw error;
 
