@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          password_hash: string
+          role: string
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          password_hash: string
+          role?: string
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          password_hash?: string
+          role?: string
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string
@@ -21,6 +51,7 @@ export type Database = {
           id: string
           key: string
           store_id: string
+          store_id_8digit: string | null
           updated_at: string
           value: string | null
         }
@@ -30,6 +61,7 @@ export type Database = {
           id?: string
           key: string
           store_id: string
+          store_id_8digit?: string | null
           updated_at?: string
           value?: string | null
         }
@@ -39,6 +71,7 @@ export type Database = {
           id?: string
           key?: string
           store_id?: string
+          store_id_8digit?: string | null
           updated_at?: string
           value?: string | null
         }
@@ -91,6 +124,7 @@ export type Database = {
           postal_code: string | null
           state: string | null
           store_id: string
+          store_id_8digit: string | null
           updated_at: string
         }
         Insert: {
@@ -107,6 +141,7 @@ export type Database = {
           postal_code?: string | null
           state?: string | null
           store_id: string
+          store_id_8digit?: string | null
           updated_at?: string
         }
         Update: {
@@ -123,6 +158,7 @@ export type Database = {
           postal_code?: string | null
           state?: string | null
           store_id?: string
+          store_id_8digit?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -150,6 +186,7 @@ export type Database = {
           phone_number: string | null
           snapchat_account: string | null
           store_id: string
+          store_id_8digit: string | null
           tax_rate: number | null
           updated_at: string
         }
@@ -167,6 +204,7 @@ export type Database = {
           phone_number?: string | null
           snapchat_account?: string | null
           store_id: string
+          store_id_8digit?: string | null
           tax_rate?: number | null
           updated_at?: string
         }
@@ -184,6 +222,7 @@ export type Database = {
           phone_number?: string | null
           snapchat_account?: string | null
           store_id?: string
+          store_id_8digit?: string | null
           tax_rate?: number | null
           updated_at?: string
         }
@@ -205,6 +244,7 @@ export type Database = {
           product_id: string
           quantity: number
           store_id: string
+          store_id_8digit: string | null
           total_price: number
           unit_price: number
         }
@@ -215,6 +255,7 @@ export type Database = {
           product_id: string
           quantity: number
           store_id: string
+          store_id_8digit?: string | null
           total_price: number
           unit_price: number
         }
@@ -225,6 +266,7 @@ export type Database = {
           product_id?: string
           quantity?: number
           store_id?: string
+          store_id_8digit?: string | null
           total_price?: number
           unit_price?: number
         }
@@ -263,6 +305,7 @@ export type Database = {
           name: string
           sort_order: number | null
           store_id: string
+          store_id_8digit: string | null
         }
         Insert: {
           color?: string | null
@@ -274,6 +317,7 @@ export type Database = {
           name: string
           sort_order?: number | null
           store_id: string
+          store_id_8digit?: string | null
         }
         Update: {
           color?: string | null
@@ -285,6 +329,7 @@ export type Database = {
           name?: string
           sort_order?: number | null
           store_id?: string
+          store_id_8digit?: string | null
         }
         Relationships: [
           {
@@ -313,6 +358,7 @@ export type Database = {
           shipping_state: string | null
           status: string
           store_id: string
+          store_id_8digit: string | null
           total_amount: number
           updated_at: string
         }
@@ -332,6 +378,7 @@ export type Database = {
           shipping_state?: string | null
           status?: string
           store_id: string
+          store_id_8digit?: string | null
           total_amount: number
           updated_at?: string
         }
@@ -351,6 +398,7 @@ export type Database = {
           shipping_state?: string | null
           status?: string
           store_id?: string
+          store_id_8digit?: string | null
           total_amount?: number
           updated_at?: string
         }
@@ -381,6 +429,7 @@ export type Database = {
           payment_method: string
           payment_status: string | null
           store_id: string
+          store_id_8digit: string | null
           transaction_id: string | null
         }
         Insert: {
@@ -392,6 +441,7 @@ export type Database = {
           payment_method: string
           payment_status?: string | null
           store_id: string
+          store_id_8digit?: string | null
           transaction_id?: string | null
         }
         Update: {
@@ -403,6 +453,7 @@ export type Database = {
           payment_method?: string
           payment_status?: string | null
           store_id?: string
+          store_id_8digit?: string | null
           transaction_id?: string | null
         }
         Relationships: [
@@ -428,6 +479,7 @@ export type Database = {
           sku: string | null
           stock_quantity: number
           store_id: string
+          store_id_8digit: string | null
           updated_at: string
         }
         Insert: {
@@ -442,6 +494,7 @@ export type Database = {
           sku?: string | null
           stock_quantity?: number
           store_id: string
+          store_id_8digit?: string | null
           updated_at?: string
         }
         Update: {
@@ -456,6 +509,7 @@ export type Database = {
           sku?: string | null
           stock_quantity?: number
           store_id?: string
+          store_id_8digit?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -553,6 +607,7 @@ export type Database = {
           id: string
           is_active: boolean
           store_id: string
+          store_id_8digit: string
           store_name: string
           store_slug: string
           updated_at: string
@@ -562,6 +617,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           store_id?: string
+          store_id_8digit: string
           store_name: string
           store_slug: string
           updated_at?: string
@@ -571,6 +627,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           store_id?: string
+          store_id_8digit?: string
           store_name?: string
           store_slug?: string
           updated_at?: string
@@ -589,6 +646,15 @@ export type Database = {
       _jwt_store_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      authenticate_admin: {
+        Args: { input_password: string; input_username: string }
+        Returns: {
+          admin_id: string
+          email: string
+          role: string
+          username: string
+        }[]
       }
       authenticate_store_user_with_store_v2: {
         Args: { p_password: string; p_store_input: string; p_username: string }
@@ -636,6 +702,10 @@ export type Database = {
       }
       hash_password: {
         Args: { password: string }
+        Returns: string
+      }
+      next_store_id: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       reset_order_sequence: {

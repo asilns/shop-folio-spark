@@ -11,6 +11,7 @@ interface StoreUser {
   subscription_expiry: string;
   last_login: string | null;
   store_id: string;
+  store_id_8digit: string;
 }
 
 interface StoreAuthContextType {
@@ -43,8 +44,8 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (store: string, username: string, password: string) => {
     try {
-      // Use the new store-aware auth function
-      const { data, error } = await supabase.functions.invoke('store-auth-with-store-input', {
+      // Use the new 8-digit store ID auth function
+      const { data, error } = await supabase.functions.invoke('store-auth-8digit', {
         body: { store, username, password }
       });
 
@@ -63,6 +64,10 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
           redirectInfo: data.store
         };
       } else {
+        // Handle specific error cases
+        if (data?.errorCode === 'STORE_DEACTIVATED') {
+          return { error: { message: 'This store is deactivated. Please contact the administrator.' } };
+        }
         return { error: { message: data?.error || 'Invalid credentials' } };
       }
     } catch (error) {
