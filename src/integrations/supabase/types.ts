@@ -656,6 +656,25 @@ export type Database = {
           username: string
         }[]
       }
+      authenticate_store_user_simple: {
+        Args: { p_password: string; p_store_input: string; p_username: string }
+        Returns: {
+          current_slug: string
+          error_code: string
+          last_login: string
+          needs_redirect: boolean
+          pin: string
+          role: string
+          store_active: boolean
+          store_id: string
+          store_id_8digit: string
+          store_name: string
+          subscription_date: string
+          subscription_expiry: string
+          user_id: string
+          username: string
+        }[]
+      }
       authenticate_store_user_with_store_v2: {
         Args: { p_password: string; p_store_input: string; p_username: string }
         Returns: {

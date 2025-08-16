@@ -70,9 +70,9 @@ const handler = async (req: Request): Promise<Response> => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Use the correct authentication function
+    // Use the simple authentication function temporarily
     const { data: authResult, error: authError } = await supabase
-      .rpc('authenticate_store_user_with_store_v2', {
+      .rpc('authenticate_store_user_simple', {
         p_store_input: store,
         p_username: username,
         p_password: password
