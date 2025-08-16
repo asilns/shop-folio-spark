@@ -33,6 +33,12 @@ export function StoreAuthProvider({ children }: { children: React.ReactNode }) {
     if (sessionData) {
       try {
         const userData = JSON.parse(sessionData);
+        // Ensure we're using the 8-digit store_id if available
+        if (userData.store_id_8digit && userData.store_id !== userData.store_id_8digit) {
+          userData.store_id = userData.store_id_8digit;
+          // Update localStorage with corrected data
+          localStorage.setItem('store_auth_session', JSON.stringify(userData));
+        }
         setUser(userData);
       } catch (error) {
         console.error('Error parsing stored session:', error);
