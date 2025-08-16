@@ -9,7 +9,7 @@ const ALLOW_ORIGIN = Deno.env.get("ALLOW_ORIGIN") ?? "*";
 
 const cors = {
   "Access-Control-Allow-Origin": ALLOW_ORIGIN,
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-app-token",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-app-token, x-client-info",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json",
 };
