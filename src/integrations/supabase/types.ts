@@ -14,86 +14,43 @@ export type Database = {
   }
   public: {
     Tables: {
-      admins: {
-        Row: {
-          created_at: string
-          email: string | null
-          id: string
-          password_hash: string
-          role: string
-          updated_at: string
-          username: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          id?: string
-          password_hash: string
-          role?: string
-          updated_at?: string
-          username: string
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          id?: string
-          password_hash?: string
-          role?: string
-          updated_at?: string
-          username?: string
-        }
-        Relationships: []
-      }
       app_settings: {
         Row: {
           created_at: string
+          description: string | null
           id: string
           key: string
+          store_id: string
           updated_at: string
-          value: string
+          value: string | null
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
           key: string
+          store_id: string
           updated_at?: string
-          value: string
+          value?: string | null
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
           key?: string
+          store_id?: string
           updated_at?: string
-          value?: string
+          value?: string | null
         }
-        Relationships: []
-      }
-      audit_logs: {
-        Row: {
-          action_type: string
-          admin_username: string
-          affected_user: string | null
-          created_at: string
-          id: string
-          notes: string | null
-        }
-        Insert: {
-          action_type: string
-          admin_username: string
-          affected_user?: string | null
-          created_at?: string
-          id?: string
-          notes?: string | null
-        }
-        Update: {
-          action_type?: string
-          admin_username?: string
-          affected_user?: string | null
-          created_at?: string
-          id?: string
-          notes?: string | null
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_app_settings_store_id"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
@@ -101,7 +58,6 @@ export type Database = {
           description: string | null
           id: string
           name: string
-          store_id: string | null
           updated_at: string
         }
         Insert: {
@@ -109,7 +65,6 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
-          store_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -117,18 +72,9 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
-          store_id?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "categories_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       customers: {
         Row: {
@@ -144,7 +90,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           state: string | null
-          store_id: string | null
+          store_id: string
           updated_at: string
         }
         Insert: {
@@ -160,7 +106,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           state?: string | null
-          store_id?: string | null
+          store_id: string
           updated_at?: string
         }
         Update: {
@@ -176,60 +122,18 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           state?: string | null
-          store_id?: string | null
+          store_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "customers_store_id_fkey"
+            foreignKeyName: "fk_customers_store_id"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id"]
           },
         ]
-      }
-      deleted_users: {
-        Row: {
-          deleted_at: string
-          deleted_by: string
-          id: string
-          last_login: string | null
-          original_user_id: string
-          password_hash: string
-          pin: string
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          username: string
-        }
-        Insert: {
-          deleted_at?: string
-          deleted_by: string
-          id?: string
-          last_login?: string | null
-          original_user_id: string
-          password_hash: string
-          pin: string
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          username: string
-        }
-        Update: {
-          deleted_at?: string
-          deleted_by?: string
-          id?: string
-          last_login?: string | null
-          original_user_id?: string
-          password_hash?: string
-          pin?: string
-          store_name?: string
-          subscription_date?: string
-          subscription_expiry?: string
-          username?: string
-        }
-        Relationships: []
       }
       invoice_settings: {
         Row: {
@@ -239,13 +143,14 @@ export type Database = {
           company_name: string | null
           country: string | null
           created_at: string
+          currency: string | null
           facebook_account: string | null
           id: string
           instagram_account: string | null
-          logo_url: string | null
           phone_number: string | null
           snapchat_account: string | null
-          store_id: string | null
+          store_id: string
+          tax_rate: number | null
           updated_at: string
         }
         Insert: {
@@ -255,13 +160,14 @@ export type Database = {
           company_name?: string | null
           country?: string | null
           created_at?: string
+          currency?: string | null
           facebook_account?: string | null
           id?: string
           instagram_account?: string | null
-          logo_url?: string | null
           phone_number?: string | null
           snapchat_account?: string | null
-          store_id?: string | null
+          store_id: string
+          tax_rate?: number | null
           updated_at?: string
         }
         Update: {
@@ -271,73 +177,21 @@ export type Database = {
           company_name?: string | null
           country?: string | null
           created_at?: string
+          currency?: string | null
           facebook_account?: string | null
           id?: string
           instagram_account?: string | null
-          logo_url?: string | null
           phone_number?: string | null
           snapchat_account?: string | null
-          store_id?: string | null
+          store_id?: string
+          tax_rate?: number | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "invoice_settings_store_id_fkey"
+            foreignKeyName: "fk_invoice_settings_store_id"
             columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      managed_users: {
-        Row: {
-          created_at: string
-          id: string
-          last_login: string | null
-          password_hash: string
-          pin: string
-          role: string
-          store_id: string | null
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          updated_at: string
-          username: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_login?: string | null
-          password_hash: string
-          pin: string
-          role?: string
-          store_id?: string | null
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          updated_at?: string
-          username: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_login?: string | null
-          password_hash?: string
-          pin?: string
-          role?: string
-          store_id?: string | null
-          store_name?: string
-          subscription_date?: string
-          subscription_expiry?: string
-          updated_at?: string
-          username?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "managed_users_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -350,6 +204,7 @@ export type Database = {
           order_id: string
           product_id: string
           quantity: number
+          store_id: string
           total_price: number
           unit_price: number
         }
@@ -359,6 +214,7 @@ export type Database = {
           order_id: string
           product_id: string
           quantity: number
+          store_id: string
           total_price: number
           unit_price: number
         }
@@ -368,10 +224,18 @@ export type Database = {
           order_id?: string
           product_id?: string
           quantity?: number
+          store_id?: string
           total_price?: number
           unit_price?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_order_items_store_id"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id"]
+          },
           {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
@@ -390,36 +254,47 @@ export type Database = {
       }
       order_statuses: {
         Row: {
-          color: string
+          color: string | null
           created_at: string
           display_name: string
           id: string
-          is_active: boolean
+          is_active: boolean | null
+          is_default: boolean | null
           name: string
-          sort_order: number
-          updated_at: string
+          sort_order: number | null
+          store_id: string
         }
         Insert: {
-          color?: string
+          color?: string | null
           created_at?: string
           display_name: string
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
+          is_default?: boolean | null
           name: string
-          sort_order?: number
-          updated_at?: string
+          sort_order?: number | null
+          store_id: string
         }
         Update: {
-          color?: string
+          color?: string | null
           created_at?: string
           display_name?: string
           id?: string
-          is_active?: boolean
+          is_active?: boolean | null
+          is_default?: boolean | null
           name?: string
-          sort_order?: number
-          updated_at?: string
+          sort_order?: number | null
+          store_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_order_statuses_store_id"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -437,7 +312,7 @@ export type Database = {
           shipping_postal_code: string | null
           shipping_state: string | null
           status: string
-          store_id: string | null
+          store_id: string
           total_amount: number
           updated_at: string
         }
@@ -456,7 +331,7 @@ export type Database = {
           shipping_postal_code?: string | null
           shipping_state?: string | null
           status?: string
-          store_id?: string | null
+          store_id: string
           total_amount: number
           updated_at?: string
         }
@@ -475,11 +350,18 @@ export type Database = {
           shipping_postal_code?: string | null
           shipping_state?: string | null
           status?: string
-          store_id?: string | null
+          store_id?: string
           total_amount?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_orders_store_id"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["store_id"]
+          },
           {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
@@ -487,12 +369,49 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          gateway_response: Json | null
+          id: string
+          order_id: string
+          payment_method: string
+          payment_status: string | null
+          store_id: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          gateway_response?: Json | null
+          id?: string
+          order_id: string
+          payment_method: string
+          payment_status?: string | null
+          store_id: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          gateway_response?: Json | null
+          id?: string
+          order_id?: string
+          payment_method?: string
+          payment_status?: string | null
+          store_id?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "orders_store_id_fkey"
+            foreignKeyName: "fk_payments_store_id"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id"]
           },
         ]
       }
@@ -508,7 +427,7 @@ export type Database = {
           price: number
           sku: string | null
           stock_quantity: number
-          store_id: string | null
+          store_id: string
           updated_at: string
         }
         Insert: {
@@ -522,7 +441,7 @@ export type Database = {
           price: number
           sku?: string | null
           stock_quantity?: number
-          store_id?: string | null
+          store_id: string
           updated_at?: string
         }
         Update: {
@@ -536,48 +455,18 @@ export type Database = {
           price?: number
           sku?: string | null
           stock_quantity?: number
-          store_id?: string | null
+          store_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "products_store_id_fkey"
+            foreignKeyName: "fk_products_store_id"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
-            referencedColumns: ["id"]
+            referencedColumns: ["store_id"]
           },
         ]
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          id: string
-          pin_hash: string | null
-          role: string
-          updated_at: string
-          user_id: string
-          username: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          pin_hash?: string | null
-          role?: string
-          updated_at?: string
-          user_id: string
-          username: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          pin_hash?: string | null
-          role?: string
-          updated_at?: string
-          user_id?: string
-          username?: string
-        }
-        Relationships: []
       }
       store_slug_history: {
         Row: {
@@ -663,7 +552,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
-          owner_user_id: string | null
+          store_id: string
           store_name: string
           store_slug: string
           updated_at: string
@@ -672,7 +561,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
-          owner_user_id?: string | null
+          store_id?: string
           store_name: string
           store_slug: string
           updated_at?: string
@@ -681,69 +570,31 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
-          owner_user_id?: string | null
+          store_id?: string
           store_name?: string
           store_slug?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "stores_owner_user_id_fkey"
-            columns: ["owner_user_id"]
-            isOneToOne: false
-            referencedRelation: "managed_users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      authenticate_admin: {
-        Args: { input_password: string; input_username: string }
-        Returns: {
-          admin_id: string
-          email: string
-          role: string
-          username: string
-        }[]
+      _col_exists: {
+        Args: { p_col: string; p_schema: string; p_table: string }
+        Returns: boolean
       }
-      authenticate_store_user: {
-        Args: { p_password: string; p_username: string }
-        Returns: {
-          last_login: string
-          pin: string
-          role: string
-          store_id: string
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          user_id: string
-          username: string
-        }[]
-      }
-      authenticate_store_user_with_store: {
-        Args: { p_password: string; p_store_input: string; p_username: string }
-        Returns: {
-          current_slug: string
-          last_login: string
-          needs_redirect: boolean
-          pin: string
-          role: string
-          store_id: string
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          user_id: string
-          username: string
-        }[]
+      _jwt_store_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       authenticate_store_user_with_store_v2: {
         Args: { p_password: string; p_store_input: string; p_username: string }
         Returns: {
           current_slug: string
+          error_code: string
           last_login: string
           needs_redirect: boolean
           pin: string
@@ -757,106 +608,43 @@ export type Database = {
           username: string
         }[]
       }
-      create_managed_user: {
-        Args: {
-          p_password_hash: string
-          p_pin: string
-          p_role?: string
-          p_store_id?: string
-          p_store_name: string
-          p_subscription_date: string
-          p_subscription_expiry: string
-          p_username: string
-        }
+      create_store_with_users: {
+        Args: { p_store_name: string; p_store_slug: string; p_users: Json }
         Returns: {
-          created_at: string
-          id: string
-          pin: string
-          role: string
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          username: string
-        }[]
-      }
-      create_store_for_user: {
-        Args: { p_store_name: string; p_user_id: string }
-        Returns: {
+          created_users: Json
+          is_active: boolean
           store_id: string
+          store_name: string
           store_slug: string
         }[]
       }
-      delete_managed_user: {
-        Args: { p_admin_username: string; p_user_id: string }
-        Returns: boolean
+      create_store_with_uuid: {
+        Args: { p_store_name: string; p_store_slug?: string }
+        Returns: {
+          created_at: string
+          id: string
+          is_active: boolean
+          store_id: string
+          store_name: string
+          store_slug: string
+          updated_at: string
+        }[]
       }
       generate_order_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
-      generate_store_slug: {
-        Args: { store_name_input: string }
+      hash_password: {
+        Args: { password: string }
         Returns: string
-      }
-      get_admin_role: {
-        Args: { admin_id: string }
-        Returns: string
-      }
-      get_managed_users: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          created_at: string
-          id: string
-          last_login: string
-          password_hash: string
-          pin: string
-          store_name: string
-          subscription_date: string
-          subscription_expiry: string
-          updated_at: string
-          username: string
-        }[]
-      }
-      get_user_role: {
-        Args: { user_uuid: string }
-        Returns: string
-      }
-      purge_old_deleted_users: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
       reset_order_sequence: {
         Args: { new_start: number }
         Returns: undefined
       }
-      resolve_store_by_slug: {
-        Args: { slug_input: string }
-        Returns: {
-          current_slug: string
-          needs_redirect: boolean
-          store_id: string
-        }[]
-      }
-      restore_deleted_user: {
-        Args: { admin_username: string; deleted_user_id: string }
+      seed_default_settings_for_store: {
+        Args: { p_store_id: string }
         Returns: undefined
-      }
-      soft_delete_user: {
-        Args: { admin_username: string; user_id: string }
-        Returns: undefined
-      }
-      update_managed_user: {
-        Args: {
-          p_password_hash?: string
-          p_pin?: string
-          p_role?: string
-          p_store_name?: string
-          p_subscription_date?: string
-          p_subscription_expiry?: string
-          p_user_id: string
-          p_username?: string
-        }
-        Returns: boolean
       }
     }
     Enums: {
